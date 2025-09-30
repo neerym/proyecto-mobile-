@@ -82,7 +82,7 @@ const handleSignUp = async () => {
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
-          {/* Header con logo */}
+          {/* Header con logo  */}
           <View style={styles.header}>
             <Image source={require('../assets/logo.png')} style={styles.logo} />
           </View>
