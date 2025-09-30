@@ -23,10 +23,16 @@ export default function SignUp({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false); // 👈 nuevo estado
 
   const handleSignUp = async () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       Alert.alert("Error", "Todos los campos son obligatorios.");
+      return;
+    }
+
+    if (!termsAccepted) {  // 👈 validación de términos
+      Alert.alert("Error", "Debes aceptar los términos y condiciones.");
       return;
     }
 
@@ -157,6 +163,15 @@ export default function SignUp({ navigation }) {
               </TouchableOpacity>
             </View>
 
+            {/* Checkbox términos */}
+            <TouchableOpacity 
+              style={styles.termsContainer} 
+              onPress={() => setTermsAccepted(!termsAccepted)}
+            >
+              <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]} />
+              <Text style={styles.termsText}>He leído y acepto los términos y condiciones</Text>
+            </TouchableOpacity>
+
             {/* Botón registrarse */}
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>
               <Text style={styles.buttonText}>Registrarse</Text>
@@ -181,7 +196,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f6fa',
   },
   header: {
-    backgroundColor: '#789C3B', // color exacto del logo
+    backgroundColor: '#789C3B',
     width: '100%',
     alignItems: 'center',
     paddingVertical: 50,
@@ -230,6 +245,26 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 40,
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1,
+    borderColor: '#789C3B',
+    marginRight: 10,
+    borderRadius: 5,
+  },
+  checkboxChecked: {
+    backgroundColor: '#789C3B',
+  },
+  termsText: {
+    fontSize: 14,
+    color: '#333',
   },
   button: {
     backgroundColor: '#789C3B',
