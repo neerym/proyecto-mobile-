@@ -7,6 +7,9 @@ import Login from '../screens/Login';
 import SignUp from '../screens/SignUp';
 import Home from '../screens/Home';
 import Loading from '../screens/Loading';
+import Items from '../screens/Items';
+import AddProduct from '../screens/AddProduct';
+import Profile from '../screens/Profile';
 
 
 const Stack = createStackNavigator();
@@ -33,6 +36,9 @@ function Navigation() {
         <Stack.Screen name="SignUp" component={SignUp} />
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Loading" component={Loading} />
+        <Stack.Screen name="Items" component={Items} />
+        <Stack.Screen name="AddProduct" component={AddProduct} />
+        <Stack.Screen name="Profile" component={Profile} />
       </Stack.Navigator>
     </NavigationContainer>
   );
