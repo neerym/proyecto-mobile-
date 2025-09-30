@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f5f6fa',
+    backgroundColor: '#789C3B',
   },
   logo: {
     width: 120,
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
-    backgroundColor: '#789C3B',
+    backgroundColor: '#fff',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 10,
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   buttonText: {
-    color: '#fff',
+    color: '#789C3B',
     fontSize: 16,
     fontWeight: 'bold',
   },

@@ -33,6 +33,7 @@ export default function Login({ navigation }) {
       Alert.alert("Login exitoso", "Has iniciado sesión correctamente.");
       navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
     } catch (error) {
+      console.log("❌ Error Firebase:", error); // para debug
       let errorMessage = "Hubo un problema al iniciar sesión.";
       switch (error.code) {
         case 'auth/invalid-email':
@@ -55,11 +56,6 @@ export default function Login({ navigation }) {
   // ⚡️ Botón Google preparado (futuro)
   const handleGoogleLogin = async () => {
     Alert.alert("Google Login", "Aquí se conectará Firebase con Google.");
-    // Ejemplo futuro:
-    // const provider = new GoogleAuthProvider();
-    // const result = await signInWithPopup(auth, provider);
-    // const user = result.user;
-    // navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
   };
 
   return (
@@ -145,7 +141,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f6fa',
   },
   header: {
-    backgroundColor: '#789C3B', // color del logo
+    backgroundColor: '#789C3B',
     width: '100%',
     alignItems: 'center',
     paddingVertical: 50,

@@ -23,56 +23,57 @@ export default function SignUp({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false); // 👈 nuevo estado
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
-  const handleSignUp = async () => {
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
-      return;
-    }
+const handleSignUp = async () => {
+  if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    Alert.alert("Error", "Por favor completa todos los campos.");
+    return;
+  }
 
-    if (!termsAccepted) {  // 👈 validación de términos
-      Alert.alert("Error", "Debes aceptar los términos y condiciones.");
-      return;
-    }
+  if (!termsAccepted) {
+    Alert.alert("Error", "Debes aceptar los términos y condiciones.");
+    return;
+  }
 
-    if (password !== confirmPassword) {
-      Alert.alert("Error", "Las contraseñas no coinciden.");
-      return;
-    }
+  if (password !== confirmPassword) {
+    Alert.alert("Error", "Las contraseñas ingresadas no coinciden.");
+    return;
+  }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,}$/;
-    if (!passwordRegex.test(password)) {
-      Alert.alert(
-        "Error",
-        "La contraseña debe tener al menos 6 caracteres, incluyendo una letra mayúscula, una minúscula y un número."
-      );
-      return;
-    }
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,}$/;
+  if (!passwordRegex.test(password)) {
+    Alert.alert(
+      "Error",
+      "La contraseña debe tener al menos 6 caracteres, con mayúscula, minúscula y número."
+    );
+    return;
+  }
 
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      Alert.alert("Registro exitoso", "Usuario registrado con éxito.");
-      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-    } catch (error) {
-      let errorMessage = "Hubo un problema al registrar el usuario.";
-      switch (error.code) {
-        case 'auth/email-already-in-use':
-          errorMessage = "El correo electrónico ya está en uso.";
-          break;
-        case 'auth/invalid-email':
-          errorMessage = "El formato del correo electrónico no es válido.";
-          break;
-        case 'auth/weak-password':
-          errorMessage = "La contraseña es demasiado débil.";
-          break;
-        case 'auth/network-request-failed':
-          errorMessage = "Error de conexión, por favor intenta más tarde.";
-          break;
-      }
-      Alert.alert("Error", errorMessage);
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    Alert.alert("¡Registro exitoso!", "Tu cuenta se creó correctamente.");
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+  } catch (error) {
+    console.log("❌ Error Firebase:", error);
+    let errorMessage = "Ocurrió un problema al registrarte.";
+    switch (error.code) {
+      case 'auth/email-already-in-use':
+        errorMessage = "Este correo ya está registrado.";
+        break;
+      case 'auth/invalid-email':
+        errorMessage = "El correo ingresado no es válido.";
+        break;
+      case 'auth/weak-password':
+        errorMessage = "La contraseña es demasiado débil.";
+        break;
+      case 'auth/network-request-failed':
+        errorMessage = "No se pudo conectar. Verifica tu internet.";
+        break;
     }
-  };
+    Alert.alert("Error", errorMessage);
+  }
+};
 
   return (
     <KeyboardAvoidingView 
