@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Alert, 
+  Image, 
+  KeyboardAvoidingView, 
+  ScrollView, 
+  Platform 
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { auth } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -36,7 +47,7 @@ export default function SignUp({ navigation }) {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       Alert.alert("Registro exitoso", "Usuario registrado con éxito.");
-      navigation.reset({ index: 0, routes: [{ name: 'Login' }] }); 
+      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     } catch (error) {
       let errorMessage = "Hubo un problema al registrar el usuario.";
       switch (error.code) {
@@ -58,117 +69,160 @@ export default function SignUp({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
-      <Text style={styles.title}>Regístrate</Text>
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.container}>
+          {/* Header con logo */}
+          <View style={styles.header}>
+            <Image source={require('../assets/logo.png')} style={styles.logo} />
+          </View>
 
-      <Text style={styles.label}>Nombre</Text>
-      <View style={styles.inputContainer}>
-        <FontAwesome name="user" size={20} color="#ccc" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Ingrese su nombre"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-      </View>
+          {/* Formulario */}
+          <View style={styles.form}>
+            <Text style={styles.title}>Crear cuenta</Text>
 
-      <Text style={styles.label}>Apellido</Text>
-      <View style={styles.inputContainer}>
-        <FontAwesome name="user" size={20} color="#ccc" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Ingrese su apellido"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-      </View>
+            {/* Nombre */}
+            <View style={styles.inputContainer}>
+              <FontAwesome name="user" size={20} color="#777" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+            </View>
 
-      <Text style={styles.label}>Correo</Text>
-      <View style={styles.inputContainer}>
-        <FontAwesome name="envelope" size={20} color="#ccc" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Ingrese su correo"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
+            {/* Apellido */}
+            <View style={styles.inputContainer}>
+              <FontAwesome name="user" size={20} color="#777" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Apellido"
+                value={lastName}
+                onChangeText={setLastName}
+              />
+            </View>
 
-      <Text style={styles.label}>Contraseña</Text>
-      <View style={styles.inputContainer}>
-        <FontAwesome name="lock" size={20} color="#ccc" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Ingrese su contraseña"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#ccc" />
-        </TouchableOpacity>
-      </View>
+            {/* Correo */}
+            <View style={styles.inputContainer}>
+              <FontAwesome name="envelope" size={20} color="#777" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Correo electrónico"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
 
-      <Text style={styles.label}>Confirmar Contraseña</Text>
-      <View style={styles.inputContainer}>
-        <FontAwesome name="lock" size={20} color="#ccc" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Confirme su contraseña"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry={!showConfirmPassword}
-        />
-        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-          <FontAwesome name={showConfirmPassword ? "eye-slash" : "eye"} size={20} color="#ccc" />
-        </TouchableOpacity>
-      </View>
+            {/* Contraseña */}
+            <View style={styles.inputContainer}>
+              <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Contraseña"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <FontAwesome 
+                  name={showPassword ? "eye-slash" : "eye"} 
+                  size={20} 
+                  color="#777" 
+                />
+              </TouchableOpacity>
+            </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-        <Text style={styles.buttonText}>Registrarse</Text>
-      </TouchableOpacity>
+            {/* Confirmar contraseña */}
+            <View style={styles.inputContainer}>
+              <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Confirmar contraseña"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showConfirmPassword}
+              />
+              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                <FontAwesome 
+                  name={showConfirmPassword ? "eye-slash" : "eye"} 
+                  size={20} 
+                  color="#777" 
+                />
+              </TouchableOpacity>
+            </View>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.signUpText}>¿Ya tienes cuenta? Inicia sesión</Text>
-      </TouchableOpacity>
-    </View>
+            {/* Botón registrarse */}
+            <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+              <Text style={styles.buttonText}>Registrarse</Text>
+            </TouchableOpacity>
+
+            {/* Ir a login */}
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.signUpText}>
+                ¿Ya tienes cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Inicia sesión</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#f5f6fa',
+  },
+  header: {
+    backgroundColor: '#789C3B', // color exacto del logo
+    width: '100%',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
+    paddingVertical: 50,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   logo: {
     width: 100,
     height: 100,
-    marginBottom: 10,
+  },
+  form: {
+    flex: 1,
+    alignItems: 'center',
+    marginTop: -30,
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 5,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  label: {
-    alignSelf: 'flex-start',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
+    color: '#2e7d32',
+    marginBottom: 20,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderColor: '#b9770e',
-    marginBottom: 20,
+    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 15,
     width: '100%',
+    height: 50,
   },
   icon: {
     marginRight: 10,
@@ -178,20 +232,21 @@ const styles = StyleSheet.create({
     height: 40,
   },
   button: {
-    backgroundColor: '#922b21',
-    paddingVertical: 10,
-    paddingHorizontal: 40,
-    borderRadius: 5,
+    backgroundColor: '#789C3B',
+    paddingVertical: 15,
+    borderRadius: 10,
+    width: '100%',
+    alignItems: 'center',
     marginTop: 10,
+    marginBottom: 20,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   signUpText: {
-    marginTop: 20,
-    color: '#007AFF',
+    fontSize: 14,
+    color: '#555',
   },
 });
-

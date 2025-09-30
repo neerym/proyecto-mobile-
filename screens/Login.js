@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Alert, 
+  Image, 
+  KeyboardAvoidingView, 
+  ScrollView, 
+  Platform 
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
+// ⚡️ Futuro: importar GoogleAuthProvider y signInWithPopup / signInWithCredential
+// import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
@@ -18,7 +31,7 @@ export default function Login({ navigation }) {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       Alert.alert("Login exitoso", "Has iniciado sesión correctamente.");
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] }); 
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
     } catch (error) {
       let errorMessage = "Hubo un problema al iniciar sesión.";
       switch (error.code) {
@@ -39,81 +52,141 @@ export default function Login({ navigation }) {
     }
   };
 
+  // ⚡️ Botón Google preparado (futuro)
+  const handleGoogleLogin = async () => {
+    Alert.alert("Google Login", "Aquí se conectará Firebase con Google.");
+    // Ejemplo futuro:
+    // const provider = new GoogleAuthProvider();
+    // const result = await signInWithPopup(auth, provider);
+    // const user = result.user;
+    // navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+  };
+
   return (
-    <View style={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
-      <Text style={styles.title}>Iniciar sesión</Text>
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.container}>
+          {/* Header con logo */}
+          <View style={styles.header}>
+            <Image source={require('../assets/logo.png')} style={styles.logo} />
+          </View>
 
-      <Text style={styles.label}>Correo</Text>
-      <View style={styles.inputContainer}>
-        <FontAwesome name="envelope" size={20} color="#ccc" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Ingrese su correo"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
+          {/* Formulario */}
+          <View style={styles.form}>
+            <Text style={styles.title}>Iniciar sesión</Text>
 
-      <Text style={styles.label}>Contraseña</Text>
-      <View style={styles.inputContainer}>
-        <FontAwesome name="lock" size={20} color="#ccc" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Ingrese su contraseña"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#ccc" />
-        </TouchableOpacity>
-      </View>
+            {/* Email */}
+            <View style={styles.inputContainer}>
+              <FontAwesome name="envelope" size={20} color="#777" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Correo electrónico"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Ingresar</Text>
-      </TouchableOpacity>
+            {/* Password */}
+            <View style={styles.inputContainer}>
+              <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Contraseña"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <FontAwesome 
+                  name={showPassword ? "eye-slash" : "eye"} 
+                  size={20} 
+                  color="#777" 
+                />
+              </TouchableOpacity>
+            </View>
 
-      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-        <Text style={styles.signUpText}>¿No tienes cuenta aún? Regístrate</Text>
-      </TouchableOpacity>
-    </View>
+            {/* Forgot password */}
+            <TouchableOpacity>
+              <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
+            </TouchableOpacity>
+
+            {/* Botón ingresar */}
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Ingresar</Text>
+            </TouchableOpacity>
+
+            {/* Botón ingresar con Google */}
+            <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin}>
+              <FontAwesome name="google" size={20} color="#db4437" />
+              <Text style={styles.googleText}>Ingresar con Google</Text>
+            </TouchableOpacity>
+
+            {/* Crear cuenta */}
+            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+              <Text style={styles.signUpText}>
+                ¿No tienes una cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Crear cuenta</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#f5f6fa',
+  },
+  header: {
+    backgroundColor: '#789C3B', // color del logo
+    width: '100%',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
+    paddingVertical: 50,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   logo: {
     width: 100,
     height: 100,
-    marginBottom: 20,
+  },
+  form: {
+    flex: 1,
+    alignItems: 'center',
+    marginTop: -30,
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 5,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: '#2e7d32',
     marginBottom: 20,
-  },
-  label: {
-    alignSelf: 'flex-start',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderColor: '#b9770e',
-    marginBottom: 20,
+    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 15,
     width: '100%',
+    height: 50,
   },
   icon: {
     marginRight: 10,
@@ -122,21 +195,43 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
   },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    color: '#789C3B',
+    fontSize: 14,
+    marginBottom: 20,
+  },
   button: {
-    backgroundColor: '#922b21',
-    paddingVertical: 10,
-    paddingHorizontal: 40,
-    borderRadius: 5,
-    marginTop: 20,
+    backgroundColor: '#789C3B',
+    paddingVertical: 15,
+    borderRadius: 10,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 15,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    width: '100%',
+    marginBottom: 20,
+  },
+  googleText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#333',
+  },
   signUpText: {
-    marginTop: 20,
-    color: '#007AFF',
+    fontSize: 14,
+    color: '#555',
   },
 });
-
