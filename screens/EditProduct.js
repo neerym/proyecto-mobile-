@@ -7,47 +7,45 @@ import {
     StyleSheet, 
     Alert 
     } from 'react-native';
-    import { collection, addDoc } from "firebase/firestore";
+    import { doc, updateDoc } from "firebase/firestore";
     import { db } from "../src/config/firebaseConfig";
 
-    export default function AddProduct({ navigation }) {
-    const [name, setName] = useState('');
-    const [quantity, setQuantity] = useState('');
-    const [price, setPrice] = useState('');
-    const [description, setDescription] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
+    export default function EditProduct({ route, navigation }) {
+    const { product } = route.params;
 
-const handleAdd = async () => {
-    if (!name || !quantity || !price) {
-        Alert.alert("Error", "Nombre, cantidad y precio son obligatorios");
+    const [name, setName] = useState(product.name || '');
+    const [quantity, setQuantity] = useState(product.quantity?.toString() || '');
+    const [price, setPrice] = useState(product.price?.toString() || '');
+    const [description, setDescription] = useState(product.description || '');
+    const [imageUrl, setImageUrl] = useState(product.imageUrl || '');
+
+    const handleUpdate = async () => {
+        if (!name || !quantity || !price || !imageUrl) {
+        Alert.alert("Error", "Todos los campos son obligatorios");
         return;
-    }
+        }
 
-    try {
-        await addDoc(collection(db, "productos"), {
-        name,
-        quantity: parseInt(quantity),
-        price: parseFloat(price),
-        description,
-        imageUrl: imageUrl || "https://via.placeholder.com/80",
-        createdAt: new Date(),
+        try {
+        const productRef = doc(db, "productos", product.id);
+        await updateDoc(productRef, {
+            name,
+            quantity: parseInt(quantity),
+            price: parseFloat(price),
+            description,
+            imageUrl,
         });
 
-        // ✅ Aviso claro
-        Alert.alert("✅ Producto agregado", `${name} se guardó con éxito`);
-
-        // ⏳ Espera 1 segundo para que se vea el aviso
-        setTimeout(() => navigation.goBack(), 1000);
-    } catch (error) {
-        console.log("❌ Error al agregar producto:", error);
-        Alert.alert("Error", "No se pudo guardar el producto.");
-    }
-};
-
+        Alert.alert("✅ Producto actualizado", `${name} se modificó con éxito`);
+        navigation.goBack();
+        } catch (error) {
+        console.log("❌ Error al actualizar producto:", error);
+        Alert.alert("Error", "No se pudo actualizar el producto.");
+        }
+    };
 
     return (
         <View style={styles.container}>
-        <Text style={styles.title}>Agregar Producto</Text>
+        <Text style={styles.title}>Editar Producto</Text>
 
         <TextInput 
             style={styles.input} 
@@ -77,13 +75,13 @@ const handleAdd = async () => {
         />
         <TextInput 
             style={styles.input} 
-            placeholder="URL de la imagen (opcional)" 
+            placeholder="URL de la imagen" 
             value={imageUrl} 
             onChangeText={setImageUrl} 
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleAdd}>
-            <Text style={styles.buttonText}>Guardar</Text>
+        <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+            <Text style={styles.buttonText}>Guardar Cambios</Text>
         </TouchableOpacity>
         </View>
     );

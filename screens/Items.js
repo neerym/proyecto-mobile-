@@ -1,21 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     View, 
     Text, 
     TextInput, 
     TouchableOpacity, 
     FlatList, 
-    StyleSheet 
+    StyleSheet,
+    Image,
+    Alert
     } from 'react-native';
     import { FontAwesome } from '@expo/vector-icons';
+    import { collection, onSnapshot, query, orderBy, doc, deleteDoc } from "firebase/firestore";
+    import { db } from "../src/config/firebaseConfig";
 
     export default function Items({ navigation }) {
     const [search, setSearch] = useState('');
-    const [products, setProducts] = useState([
-        { id: '1', name: 'Yogur Griego', quantity: 15, price: 3200, description: 'Delicioso y cremoso' },
-        { id: '2', name: 'Miel', quantity: 1, price: 8200, description: 'Pura y natural' },
-        { id: '3', name: 'Granola x 500gr', quantity: 20, price: 7000, description: 'Con frutas y semillas' },
-    ]);
+    const [products, setProducts] = useState([]);
+
+    useEffect(() => {
+        const q = query(collection(db, "productos"), orderBy("createdAt", "desc"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+        const items = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        setProducts(items);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    const handleDelete = (id, name) => {
+        Alert.alert(
+        "Eliminar producto",
+        `¿Seguro que deseas eliminar "${name}"?`,
+        [
+            { text: "Cancelar", style: "cancel" },
+            { 
+            text: "Eliminar", 
+            style: "destructive", 
+            onPress: async () => {
+                try {
+                await deleteDoc(doc(db, "productos", id));
+                Alert.alert("✅ Eliminado", `${name} fue borrado.`);
+                } catch (error) {
+                console.log("❌ Error al eliminar:", error);
+                Alert.alert("Error", "No se pudo eliminar el producto.");
+                }
+            } 
+            }
+        ]
+        );
+    };
 
     const filteredProducts = products.filter(p =>
         p.name.toLowerCase().includes(search.toLowerCase())
@@ -23,16 +59,31 @@ import {
 
     const renderItem = ({ item }) => (
         <View style={styles.card}>
+        {/* Imagen */}
+        <Image 
+            source={{ uri: item.imageUrl || "https://via.placeholder.com/80" }} 
+            style={styles.image} 
+        />
+
+        {/* Info */}
         <View style={{ flex: 1 }}>
             <Text style={styles.name}>{item.name}</Text>
             <Text>Cantidad: {item.quantity} u</Text>
             <Text>Precio: ${item.price} c/u</Text>
             <Text>Descripción: {item.description}</Text>
         </View>
-        <TouchableOpacity style={styles.iconButton}>
+
+        {/* Botones acción */}
+        <TouchableOpacity 
+            style={styles.iconButton}
+            onPress={() => navigation.navigate("EditProduct", { product: item })}
+        >
             <FontAwesome name="pencil" size={20} color="#555" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity 
+            style={styles.iconButton}
+            onPress={() => handleDelete(item.id, item.name)}
+        >
             <FontAwesome name="trash" size={20} color="red" />
         </TouchableOpacity>
         </View>
@@ -110,6 +161,12 @@ import {
         flexDirection: 'row',
         alignItems: 'center',
         elevation: 2,
+    },
+    image: {
+        width: 80,
+        height: 80,
+        borderRadius: 10,
+        marginRight: 10,
     },
     name: {
         fontSize: 16,

@@ -3,14 +3,15 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { onAuthStateChanged } from 'firebase/auth';  
 import { auth } from '../src/config/firebaseConfig';  
+
+// Screens
 import Login from '../screens/Login';
 import SignUp from '../screens/SignUp';
 import Home from '../screens/Home';
 import Loading from '../screens/Loading';
 import Items from '../screens/Items';
 import AddProduct from '../screens/AddProduct';
-import Profile from '../screens/Profile';
-
+import EditProduct from '../screens/EditProduct'; // 👈 import nuevo
 
 const Stack = createStackNavigator();
 
@@ -19,13 +20,8 @@ function Navigation() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
-      if (user) {
-        setIsAuthenticated(true); 
-      } else {
-        setIsAuthenticated(false); 
-      }
+      setIsAuthenticated(!!user);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -38,11 +34,10 @@ function Navigation() {
         <Stack.Screen name="Loading" component={Loading} />
         <Stack.Screen name="Items" component={Items} />
         <Stack.Screen name="AddProduct" component={AddProduct} />
-        <Stack.Screen name="Profile" component={Profile} />
+        <Stack.Screen name="EditProduct" component={EditProduct} /> 
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
 export default Navigation;
-
