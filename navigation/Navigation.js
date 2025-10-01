@@ -12,6 +12,7 @@ import Loading from '../screens/Loading';
 import Items from '../screens/Items';
 import AddProduct from '../screens/AddProduct';
 import EditProduct from '../screens/EditProduct'; // 👈 import nuevo
+import Profile from '../screens/Profile';
 
 const Stack = createStackNavigator();
 
@@ -35,6 +36,7 @@ function Navigation() {
         <Stack.Screen name="Items" component={Items} />
         <Stack.Screen name="AddProduct" component={AddProduct} />
         <Stack.Screen name="EditProduct" component={EditProduct} /> 
+        <Stack.Screen name="Profile" component={Profile} />
       </Stack.Navigator>
     </NavigationContainer>
   );
