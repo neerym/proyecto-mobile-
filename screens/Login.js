@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -12,13 +12,47 @@ import {
   Platform 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { 
+  signInWithEmailAndPassword, 
+  sendPasswordResetEmail, 
+  GoogleAuthProvider, 
+  signInWithCredential 
+} from 'firebase/auth';
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
 import { auth } from '../src/config/firebaseConfig';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+const [request, response, promptAsync] = Google.useAuthRequest({
+  androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com", // 👈 el que ves en la captura
+  iosClientId: "TU_IOS_CLIENT_ID.apps.googleusercontent.com", // si no usás iOS, podés dejarlo así o borrarlo
+  expoClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",   // el de tipo Web Client
+  webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",    // igual al de arriba
+});
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { authentication } = response;
+      if (authentication?.idToken) {
+        const credential = GoogleAuthProvider.credential(authentication.idToken);
+        signInWithCredential(auth, credential)
+          .then(() => {
+            Alert.alert("✅ Bienvenido", "Has iniciado sesión con Google");
+            navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
+          })
+          .catch((error) => {
+            console.log("❌ Error credencial Google:", error);
+            Alert.alert("Error", "No se pudo iniciar sesión con Google.");
+          });
+      }
+    }
+  }, [response]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -69,10 +103,6 @@ export default function Login({ navigation }) {
       }
       Alert.alert("Error", errorMessage);
     }
-  };
-
-  const handleGoogleLogin = async () => {
-    Alert.alert("Google Login", "Aquí se conectará Firebase con Google.");
   };
 
   return (
@@ -134,7 +164,11 @@ export default function Login({ navigation }) {
             </TouchableOpacity>
 
             {/* Botón ingresar con Google */}
-            <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin}>
+            <TouchableOpacity 
+              style={[styles.googleButton, { opacity: request ? 1 : 0.5 }]} 
+              disabled={!request}
+              onPress={() => promptAsync()}
+            >
               <FontAwesome name="google" size={20} color="#db4437" />
               <Text style={styles.googleText}>Ingresar con Google</Text>
             </TouchableOpacity>
