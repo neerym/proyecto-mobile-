@@ -5,82 +5,64 @@ import {
     TextInput, 
     TouchableOpacity, 
     StyleSheet, 
-    Image, 
-    Alert 
+    Image 
     } from 'react-native';
     import { FontAwesome } from '@expo/vector-icons';
     import { auth } from '../src/config/firebaseConfig';
-    import { signOut, updatePassword, updateProfile } from 'firebase/auth';
+    import { signOut, updatePassword } from 'firebase/auth';
 
     export default function Profile({ navigation }) {
-    const user = auth.currentUser; // Usuario logueado!
-
-    const [name, setName] = useState(user?.displayName || '');
-    const [email] = useState(user?.email || '');
+    const user = auth.currentUser; // Usuario logueado
+    const [email, setEmail] = useState(user?.email || '');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [avatar, setAvatar] = useState(user?.photoURL || ''); // URL del avatar
 
     const handleUpdateProfile = async () => {
         try {
-        if (!name && !password && !avatar) {
-            Alert.alert("Aviso", "No hay cambios para guardar");
-            return;
-        }
-
-        // Actualizar nombre y avatar
-        if (name || avatar) {
-            await updateProfile(user, {
-            displayName: name,
-            photoURL: avatar || null,
-            });
-        }
-
-        // Actualizar contraseña
         if (password) {
-            if (password.length < 6) {
-            Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres.");
-            return;
-            }
             await updatePassword(user, password);
+            alert('Contraseña actualizada con éxito');
+        } else {
+            alert('No hay cambios para guardar (solo contraseña editable por ahora)');
         }
-
-        Alert.alert("Éxito", "Perfil actualizado correctamente");
         } catch (error) {
-        console.log("❌ Error al actualizar perfil:", error);
-        Alert.alert("Error", "No se pudo actualizar el perfil");
+        console.log(error);
+        alert('Error al actualizar perfil');
         }
     };
 
-    const handleLogout = async () => {
-        await signOut(auth);
-        navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-    };
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+  };
+
+  // 🔄 Spinner mientras se guarda o actualiza
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#789C3B" />
+        <Text style={{ marginTop: 15, fontSize: 16, color: '#555' }}>
+          Cargando perfil...
+        </Text>
+      </View>
+    );
+  }
 
     return (
         <View style={styles.container}>
         {/* Avatar */}
         <View style={styles.avatarContainer}>
-            {avatar ? (
-            <Image source={{ uri: avatar }} style={styles.avatar} />
-            ) : (
             <FontAwesome name="user-circle" size={100} color="#a78bfa" />
-            )}
         </View>
 
         {/* Nombre */}
-        <TextInput
-            style={styles.input}
-            placeholder="Nombre"
-            value={name}
-            onChangeText={setName}
-        />
+        <Text style={styles.name}>{user?.displayName || 'Usuario'}</Text>
 
         {/* Email */}
         <TextInput
             style={styles.input}
             value={email}
-            editable={false} // no editamos el correo
+            editable={false} // el email no lo editamos en Firebase desde acá
         />
 
         {/* Contraseña */}
@@ -101,26 +83,18 @@ import {
             </TouchableOpacity>
         </View>
 
-        {/* Avatar URL */}
-        <TextInput
-            style={styles.input}
-            placeholder="URL de tu foto de perfil"
-            value={avatar}
-            onChangeText={setAvatar}
-        />
-
         {/* Botón editar perfil */}
         <TouchableOpacity style={styles.editButton} onPress={handleUpdateProfile}>
-            <Text style={styles.editButtonText}>Guardar cambios</Text>
+            <Text style={styles.editButtonText}>Editar perfil</Text>
         </TouchableOpacity>
 
-        {/* Botón cerrar sesión */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
-        </TouchableOpacity>
-        </View>
-    );
-    }
+      {/* Botón cerrar sesión */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
     const styles = StyleSheet.create({
     container: {
@@ -132,10 +106,11 @@ import {
     avatarContainer: {
         marginBottom: 20,
     },
-    avatar: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+    name: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#2e7d32',
+        marginBottom: 20,
     },
     input: {
         backgroundColor: '#fff',
