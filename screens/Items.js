@@ -1,68 +1,93 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
-    FlatList, 
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    FlatList,
     StyleSheet,
     Image,
-    Alert
+    Alert,
+    ActivityIndicator,
     } from 'react-native';
     import { FontAwesome } from '@expo/vector-icons';
-    import { collection, onSnapshot, query, orderBy, doc, deleteDoc } from "firebase/firestore";
-    import { db } from "../src/config/firebaseConfig";
+    import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
+    import { db } from '../src/config/firebaseConfig';
 
     export default function Items({ navigation }) {
     const [search, setSearch] = useState('');
     const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const q = query(collection(db, "productos"), orderBy("createdAt", "desc"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-        const items = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        setProducts(items);
-        });
+        const ref = collection(db, 'productos');
+
+        const unsubscribe = onSnapshot(
+        ref,
+        (snapshot) => {
+            const items = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+            }));
+
+            // Ordenar en el cliente por createdAt si existe (tolerante a faltantes)
+            const ts = (x) =>
+            x?.seconds
+                ? x.seconds
+                : typeof x === 'number'
+                ? x
+                : 0;
+
+            items.sort((a, b) => ts(b.createdAt) - ts(a.createdAt));
+
+            setProducts(items);
+            setLoading(false);
+        },
+        (error) => {
+            console.log('❌ Error onSnapshot:', error);
+            Alert.alert('Error', 'No se pudieron cargar los productos.');
+            setLoading(false);
+        }
+        );
 
         return () => unsubscribe();
     }, []);
 
     const handleDelete = (id, name) => {
         Alert.alert(
-        "Eliminar producto",
+        'Eliminar producto',
         `¿Seguro que deseas eliminar "${name}"?`,
         [
-            { text: "Cancelar", style: "cancel" },
-            { 
-            text: "Eliminar", 
-            style: "destructive", 
+            { text: 'Cancelar', style: 'cancel' },
+            {
+            text: 'Eliminar',
+            style: 'destructive',
             onPress: async () => {
                 try {
-                await deleteDoc(doc(db, "productos", id));
-                Alert.alert("✅ Eliminado", `${name} fue borrado.`);
+                await deleteDoc(doc(db, 'productos', id));
+                Alert.alert('✅ Eliminado', `${name} fue borrado.`);
                 } catch (error) {
-                console.log("❌ Error al eliminar:", error);
-                Alert.alert("Error", "No se pudo eliminar el producto.");
+                console.log('❌ Error al eliminar:', error);
+                Alert.alert('Error', 'No se pudo eliminar el producto.');
                 }
-            } 
-            }
+            },
+            },
         ]
         );
     };
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(search.toLowerCase())
+    const filteredProducts = products.filter((p) =>
+        (p.name || '').toLowerCase().includes(search.toLowerCase())
     );
 
     const renderItem = ({ item }) => (
         <View style={styles.card}>
         {/* Imagen */}
-        <Image 
-            source={{ uri: item.imageUrl || "https://via.placeholder.com/80" }} 
-            style={styles.image} 
+        <Image
+            source={{
+            uri: item.imageUrl || 'https://via.placeholder.com/80',
+            }}
+            style={styles.image}
         />
 
         {/* Info */}
@@ -70,17 +95,17 @@ import {
             <Text style={styles.name}>{item.name}</Text>
             <Text>Cantidad: {item.quantity} u</Text>
             <Text>Precio: ${item.price} c/u</Text>
-            <Text>Descripción: {item.description}</Text>
+            {item.description ? <Text>Descripción: {item.description}</Text> : null}
         </View>
 
-        {/* Botones acción */}
-        <TouchableOpacity 
+        {/* Acciones */}
+        <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => navigation.navigate("EditProduct", { product: item })}
+            onPress={() => navigation.navigate('EditProduct', { product: item })}
         >
             <FontAwesome name="pencil" size={20} color="#555" />
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
             style={styles.iconButton}
             onPress={() => handleDelete(item.id, item.name)}
         >
@@ -89,9 +114,18 @@ import {
         </View>
     );
 
+    if (loading) {
+        return (
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+            <ActivityIndicator size="large" />
+            <Text style={{ marginTop: 10 }}>Cargando productos...</Text>
+        </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
-        {/* Barra de búsqueda */}
+        {/* Búsqueda */}
         <View style={styles.searchContainer}>
             <FontAwesome name="search" size={20} color="#555" />
             <TextInput
@@ -102,20 +136,21 @@ import {
             />
         </View>
 
-        {/* Botón agregar producto */}
-        <TouchableOpacity 
-            style={styles.addButton} 
+        {/* Agregar */}
+        <TouchableOpacity
+            style={styles.addButton}
             onPress={() => navigation.navigate('AddProduct')}
         >
             <Text style={styles.addButtonText}>+ Agregar producto</Text>
         </TouchableOpacity>
 
-        {/* Lista de productos */}
+        {/* Lista */}
         <FlatList
             data={filteredProducts}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={{ paddingBottom: 20 }}
+            ListEmptyComponent={<Text>No hay productos para mostrar.</Text>}
         />
         </View>
     );

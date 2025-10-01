@@ -12,8 +12,9 @@ import {
   Platform 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { auth } from '../src/config/firebaseConfig';
+import { auth, db } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 export default function SignUp({ navigation }) {
   const [firstName, setFirstName] = useState('');
@@ -25,55 +26,66 @@ export default function SignUp({ navigation }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-const handleSignUp = async () => {
-  if (!firstName || !lastName || !email || !password || !confirmPassword) {
-    Alert.alert("Error", "Por favor completa todos los campos.");
-    return;
-  }
-
-  if (!termsAccepted) {
-    Alert.alert("Error", "Debes aceptar los términos y condiciones.");
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    Alert.alert("Error", "Las contraseñas ingresadas no coinciden.");
-    return;
-  }
-
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,}$/;
-  if (!passwordRegex.test(password)) {
-    Alert.alert(
-      "Error",
-      "La contraseña debe tener al menos 6 caracteres, con mayúscula, minúscula y número."
-    );
-    return;
-  }
-
-  try {
-    await createUserWithEmailAndPassword(auth, email, password);
-    Alert.alert("¡Registro exitoso!", "Tu cuenta se creó correctamente.");
-    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-  } catch (error) {
-    console.log("❌ Error Firebase:", error);
-    let errorMessage = "Ocurrió un problema al registrarte.";
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        errorMessage = "Este correo ya está registrado.";
-        break;
-      case 'auth/invalid-email':
-        errorMessage = "El correo ingresado no es válido.";
-        break;
-      case 'auth/weak-password':
-        errorMessage = "La contraseña es demasiado débil.";
-        break;
-      case 'auth/network-request-failed':
-        errorMessage = "No se pudo conectar. Verifica tu internet.";
-        break;
+  const handleSignUp = async () => {
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+      Alert.alert("Error", "Todos los campos son obligatorios.");
+      return;
     }
-    Alert.alert("Error", errorMessage);
-  }
-};
+
+    if (!termsAccepted) {
+      Alert.alert("Error", "Debes aceptar los términos y condiciones.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Las contraseñas no coinciden.");
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,}$/;
+    if (!passwordRegex.test(password)) {
+      Alert.alert(
+        "Error",
+        "La contraseña debe tener al menos 6 caracteres, incluyendo una letra mayúscula, una minúscula y un número."
+      );
+      return;
+    }
+
+    try {
+      // 1️⃣ Crear usuario en Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // 2️⃣ Guardar datos extra en Firestore
+      await setDoc(doc(db, "usuarios", user.uid), {
+        firstName,
+        lastName,
+        email,
+        createdAt: new Date()
+      });
+
+      Alert.alert("Registro exitoso", "Usuario registrado con éxito.");
+      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+    } catch (error) {
+      console.log("❌ Error Firebase:", error);
+      let errorMessage = "Hubo un problema al registrar el usuario.";
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = "El correo electrónico ya está en uso.";
+          break;
+        case 'auth/invalid-email':
+          errorMessage = "El formato del correo electrónico no es válido.";
+          break;
+        case 'auth/weak-password':
+          errorMessage = "La contraseña es demasiado débil.";
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = "Error de conexión, por favor intenta más tarde.";
+          break;
+      }
+      Alert.alert("Error", errorMessage);
+    }
+  };
 
   return (
     <KeyboardAvoidingView 
@@ -82,7 +94,7 @@ const handleSignUp = async () => {
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
-          {/* Header con logo  */}
+          {/* Header con logo */}
           <View style={styles.header}>
             <Image source={require('../assets/logo.png')} style={styles.logo} />
           </View>
@@ -192,10 +204,7 @@ const handleSignUp = async () => {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f6fa',
-  },
+  container: { flex: 1, backgroundColor: '#f5f6fa' },
   header: {
     backgroundColor: '#789C3B',
     width: '100%',
@@ -204,10 +213,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  logo: {
-    width: 100,
-    height: 100,
-  },
+  logo: { width: 100, height: 100 },
   form: {
     flex: 1,
     alignItems: 'center',
@@ -222,12 +228,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 5,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2e7d32',
-    marginBottom: 20,
-  },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 20 },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -240,33 +241,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
   },
-  icon: {
-    marginRight: 10,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-  },
-  termsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
+  icon: { marginRight: 10 },
+  input: { flex: 1, height: 40 },
+  termsContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 1,
-    borderColor: '#789C3B',
-    marginRight: 10,
-    borderRadius: 5,
+    width: 20, height: 20, borderWidth: 1, borderColor: '#789C3B', marginRight: 10, borderRadius: 5,
   },
-  checkboxChecked: {
-    backgroundColor: '#789C3B',
-  },
-  termsText: {
-    fontSize: 14,
-    color: '#333',
-  },
+  checkboxChecked: { backgroundColor: '#789C3B' },
+  termsText: { fontSize: 14, color: '#333' },
   button: {
     backgroundColor: '#789C3B',
     paddingVertical: 15,
@@ -276,13 +258,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  signUpText: {
-    fontSize: 14,
-    color: '#555',
-  },
+  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  signUpText: { fontSize: 14, color: '#555' },
 });
