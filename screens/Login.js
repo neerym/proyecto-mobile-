@@ -12,10 +12,8 @@ import {
   Platform 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
-// ⚡️ Futuro: importar GoogleAuthProvider y signInWithPopup / signInWithCredential
-// import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
@@ -33,7 +31,7 @@ export default function Login({ navigation }) {
       Alert.alert("Login exitoso", "Has iniciado sesión correctamente.");
       navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
     } catch (error) {
-      console.log("❌ Error Firebase:", error); // para debug
+      console.log("❌ Error Firebase:", error);
       let errorMessage = "Hubo un problema al iniciar sesión.";
       switch (error.code) {
         case 'auth/invalid-email':
@@ -53,7 +51,26 @@ export default function Login({ navigation }) {
     }
   };
 
-  // ⚡️ Botón Google preparado (futuro)
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert("Error", "Por favor ingresa tu correo electrónico.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      Alert.alert("✅ Revisa tu correo", "Te enviamos un enlace para restablecer tu contraseña.");
+    } catch (error) {
+      console.log("❌ Error reset password:", error);
+      let errorMessage = "No se pudo enviar el email de recuperación.";
+      if (error.code === "auth/user-not-found") {
+        errorMessage = "No existe un usuario con ese correo.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "El correo ingresado no es válido.";
+      }
+      Alert.alert("Error", errorMessage);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     Alert.alert("Google Login", "Aquí se conectará Firebase con Google.");
   };
@@ -107,7 +124,7 @@ export default function Login({ navigation }) {
             </View>
 
             {/* Forgot password */}
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleForgotPassword}>
               <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
 
@@ -136,10 +153,7 @@ export default function Login({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f6fa',
-  },
+  container: { flex: 1, backgroundColor: '#f5f6fa' },
   header: {
     backgroundColor: '#789C3B',
     width: '100%',
@@ -148,10 +162,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  logo: {
-    width: 100,
-    height: 100,
-  },
+  logo: { width: 100, height: 100 },
   form: {
     flex: 1,
     alignItems: 'center',
@@ -166,12 +177,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 5,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2e7d32',
-    marginBottom: 20,
-  },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 20 },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -184,13 +190,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
   },
-  icon: {
-    marginRight: 10,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-  },
+  icon: { marginRight: 10 },
+  input: { flex: 1, height: 40 },
   forgotPassword: {
     alignSelf: 'flex-end',
     color: '#789C3B',
@@ -205,11 +206,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 15,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -221,13 +218,6 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 20,
   },
-  googleText: {
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#333',
-  },
-  signUpText: {
-    fontSize: 14,
-    color: '#555',
-  },
+  googleText: { marginLeft: 10, fontSize: 16, color: '#333' },
+  signUpText: { fontSize: 14, color: '#555' },
 });
