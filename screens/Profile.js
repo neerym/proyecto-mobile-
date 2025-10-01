@@ -5,29 +5,50 @@ import {
     TextInput, 
     TouchableOpacity, 
     StyleSheet, 
-    Image 
+    Image, 
+    Alert 
     } from 'react-native';
     import { FontAwesome } from '@expo/vector-icons';
     import { auth } from '../src/config/firebaseConfig';
-    import { signOut, updatePassword } from 'firebase/auth';
+    import { signOut, updatePassword, updateProfile } from 'firebase/auth';
 
     export default function Profile({ navigation }) {
-    const user = auth.currentUser; // Usuario logueado
-    const [email, setEmail] = useState(user?.email || '');
+    const user = auth.currentUser; // Usuario logueado!
+
+    const [name, setName] = useState(user?.displayName || '');
+    const [email] = useState(user?.email || '');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [avatar, setAvatar] = useState(user?.photoURL || ''); // URL del avatar
 
     const handleUpdateProfile = async () => {
         try {
-        if (password) {
-            await updatePassword(user, password);
-            alert('Contraseña actualizada con éxito');
-        } else {
-            alert('No hay cambios para guardar (solo contraseña editable por ahora)');
+        if (!name && !password && !avatar) {
+            Alert.alert("Aviso", "No hay cambios para guardar");
+            return;
         }
+
+        // Actualizar nombre y avatar
+        if (name || avatar) {
+            await updateProfile(user, {
+            displayName: name,
+            photoURL: avatar || null,
+            });
+        }
+
+        // Actualizar contraseña
+        if (password) {
+            if (password.length < 6) {
+            Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres.");
+            return;
+            }
+            await updatePassword(user, password);
+        }
+
+        Alert.alert("Éxito", "Perfil actualizado correctamente");
         } catch (error) {
-        console.log(error);
-        alert('Error al actualizar perfil');
+        console.log("❌ Error al actualizar perfil:", error);
+        Alert.alert("Error", "No se pudo actualizar el perfil");
         }
     };
 
@@ -40,17 +61,26 @@ import {
         <View style={styles.container}>
         {/* Avatar */}
         <View style={styles.avatarContainer}>
+            {avatar ? (
+            <Image source={{ uri: avatar }} style={styles.avatar} />
+            ) : (
             <FontAwesome name="user-circle" size={100} color="#a78bfa" />
+            )}
         </View>
 
         {/* Nombre */}
-        <Text style={styles.name}>{user?.displayName || 'Usuario'}</Text>
+        <TextInput
+            style={styles.input}
+            placeholder="Nombre"
+            value={name}
+            onChangeText={setName}
+        />
 
         {/* Email */}
         <TextInput
             style={styles.input}
             value={email}
-            editable={false} // el email no lo editamos en Firebase desde acá
+            editable={false} // no editamos el correo
         />
 
         {/* Contraseña */}
@@ -71,9 +101,17 @@ import {
             </TouchableOpacity>
         </View>
 
+        {/* Avatar URL */}
+        <TextInput
+            style={styles.input}
+            placeholder="URL de tu foto de perfil"
+            value={avatar}
+            onChangeText={setAvatar}
+        />
+
         {/* Botón editar perfil */}
         <TouchableOpacity style={styles.editButton} onPress={handleUpdateProfile}>
-            <Text style={styles.editButtonText}>Editar perfil</Text>
+            <Text style={styles.editButtonText}>Guardar cambios</Text>
         </TouchableOpacity>
 
         {/* Botón cerrar sesión */}
@@ -94,11 +132,10 @@ import {
     avatarContainer: {
         marginBottom: 20,
     },
-    name: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#2e7d32',
-        marginBottom: 20,
+    avatar: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
     },
     input: {
         backgroundColor: '#fff',
