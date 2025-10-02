@@ -31,22 +31,22 @@ import {
         }
     };
 
-  const handleLogout = async () => {
+    const handleLogout = async () => {
     await signOut(auth);
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-  };
+    };
 
   // 🔄 Spinner mientras se guarda o actualiza
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#789C3B" />
-        <Text style={{ marginTop: 15, fontSize: 16, color: '#555' }}>
-          Cargando perfil...
-        </Text>
-      </View>
-    );
-  }
+    if (loading) {
+        return (
+        <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#789C3B" />
+            <Text style={{ marginTop: 15, fontSize: 16, color: '#555' }}>
+            Cargando perfil...
+            </Text>
+        </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -89,11 +89,11 @@ import {
         </TouchableOpacity>
 
       {/* Botón cerrar sesión */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
-      </TouchableOpacity>
-    </View>
-  );
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
+        </TouchableOpacity>
+        </View>
+    );
 }
 
     const styles = StyleSheet.create({
