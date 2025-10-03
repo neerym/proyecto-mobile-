@@ -9,154 +9,169 @@ import {
     Image,
     Alert,
     ActivityIndicator,
-    } from 'react-native';
-    import { FontAwesome } from '@expo/vector-icons';
-    import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
-    import { db } from '../src/config/firebaseConfig';
+} from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 
-    export default function Items({ navigation }) {
-    const [search, setSearch] = useState('');
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+// Firestore: lectura en tiempo real y borrado
+import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
+import { db } from '../src/config/firebaseConfig';
 
+// 📦 Pantalla de listado de productos
+export default function Items({ navigation }) {
+    // Estados
+    const [search, setSearch] = useState('');     // filtro de búsqueda
+    const [products, setProducts] = useState([]); // lista de productos
+    const [loading, setLoading] = useState(true); // indicador de carga inicial
+
+    // 🔄 Cargar productos en tiempo real con onSnapshot
     useEffect(() => {
         const ref = collection(db, 'productos');
 
+        // Suscripción a cambios en la colección "productos"
         const unsubscribe = onSnapshot(
-        ref,
-        (snapshot) => {
-            const items = snapshot.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-            }));
+            ref,
+            (snapshot) => {
+                const items = snapshot.docs.map((d) => ({
+                    id: d.id,
+                    ...d.data(),
+                }));
 
-            // Ordenar en el cliente por createdAt si existe (tolerante a faltantes)
-            const ts = (x) =>
-            x?.seconds
-                ? x.seconds
-                : typeof x === 'number'
-                ? x
-                : 0;
+                // Ordena los productos por fecha de creación (si existe)
+                const ts = (x) =>
+                    x?.seconds
+                        ? x.seconds
+                        : typeof x === 'number'
+                        ? x
+                        : 0;
 
-            items.sort((a, b) => ts(b.createdAt) - ts(a.createdAt));
+                items.sort((a, b) => ts(b.createdAt) - ts(a.createdAt));
 
-            setProducts(items);
-            setLoading(false);
-        },
-        (error) => {
-            console.log('❌ Error onSnapshot:', error);
-            Alert.alert('Error', 'No se pudieron cargar los productos.');
-            setLoading(false);
-        }
+                setProducts(items);
+                setLoading(false);
+            },
+            (error) => {
+                console.log('❌ Error onSnapshot:', error);
+                Alert.alert('Error', 'No se pudieron cargar los productos.');
+                setLoading(false);
+            }
         );
 
+        // Limpia la suscripción cuando el componente se desmonta
         return () => unsubscribe();
     }, []);
 
+    // 🗑️ Eliminar producto con confirmación
     const handleDelete = (id, name) => {
         Alert.alert(
-        'Eliminar producto',
-        `¿Seguro que deseas eliminar "${name}"?`,
-        [
-            { text: 'Cancelar', style: 'cancel' },
-            {
-            text: 'Eliminar',
-            style: 'destructive',
-            onPress: async () => {
-                try {
-                await deleteDoc(doc(db, 'productos', id));
-                Alert.alert('✅ Eliminado', `${name} fue borrado.`);
-                } catch (error) {
-                console.log('❌ Error al eliminar:', error);
-                Alert.alert('Error', 'No se pudo eliminar el producto.');
-                }
-            },
-            },
-        ]
+            'Eliminar producto',
+            `¿Seguro que deseas eliminar "${name}"?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Eliminar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteDoc(doc(db, 'productos', id));
+                            Alert.alert('✅ Eliminado', `${name} fue borrado.`);
+                        } catch (error) {
+                            console.log('❌ Error al eliminar:', error);
+                            Alert.alert('Error', 'No se pudo eliminar el producto.');
+                        }
+                    },
+                },
+            ]
         );
     };
 
+    // 🔎 Filtrar productos según búsqueda
     const filteredProducts = products.filter((p) =>
         (p.name || '').toLowerCase().includes(search.toLowerCase())
     );
 
+    // 🎨 Renderizado de cada tarjeta de producto
     const renderItem = ({ item }) => (
         <View style={styles.card}>
-        {/* Imagen */}
-        <Image
-            source={{
-            uri: item.imageUrl || 'https://via.placeholder.com/80',
-            }}
-            style={styles.image}
-        />
+            {/* Imagen del producto */}
+            <Image
+                source={{
+                    uri: item.imageUrl || 'https://via.placeholder.com/80',
+                }}
+                style={styles.image}
+            />
 
-        {/* Info */}
-        <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text>Cantidad: {item.quantity} u</Text>
-            <Text>Precio: ${item.price} c/u</Text>
-            {item.description ? <Text>Descripción: {item.description}</Text> : null}
-        </View>
+            {/* Información principal */}
+            <View style={{ flex: 1 }}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text>Cantidad: {item.quantity} u</Text>
+                <Text>Precio: ${item.price} c/u</Text>
+                {item.description ? <Text>Descripción: {item.description}</Text> : null}
+            </View>
 
-        {/* Acciones */}
-        <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => navigation.navigate('EditProduct', { product: item })}
-        >
-            <FontAwesome name="pencil" size={20} color="#555" />
-        </TouchableOpacity>
-        <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => handleDelete(item.id, item.name)}
-        >
-            <FontAwesome name="trash" size={20} color="red" />
-        </TouchableOpacity>
+            {/* Botón de edición */}
+            <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => navigation.navigate('EditProduct', { product: item })}
+            >
+                <FontAwesome name="pencil" size={20} color="#555" />
+            </TouchableOpacity>
+
+            {/* Botón de eliminación */}
+            <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => handleDelete(item.id, item.name)}
+            >
+                <FontAwesome name="trash" size={20} color="red" />
+            </TouchableOpacity>
         </View>
     );
 
+    // 🔄 Muestra loader mientras carga
     if (loading) {
         return (
-        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-            <ActivityIndicator size="large" />
-            <Text style={{ marginTop: 10 }}>Cargando productos...</Text>
-        </View>
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" />
+                <Text style={{ marginTop: 10 }}>Cargando productos...</Text>
+            </View>
         );
     }
 
+    // 🖼️ Interfaz principal
     return (
         <View style={styles.container}>
-        {/* Búsqueda */}
-        <View style={styles.searchContainer}>
-            <FontAwesome name="search" size={20} color="#555" />
-            <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar producto..."
-            value={search}
-            onChangeText={setSearch}
+            {/* Barra de búsqueda */}
+            <View style={styles.searchContainer}>
+                <FontAwesome name="search" size={20} color="#555" />
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Buscar producto..."
+                    value={search}
+                    onChangeText={setSearch}
+                />
+            </View>
+
+            {/* Botón para ir a agregar producto */}
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => navigation.navigate('AddProduct')}
+            >
+                <Text style={styles.addButtonText}>+ Agregar producto</Text>
+            </TouchableOpacity>
+
+            {/* Lista de productos */}
+            <FlatList
+                data={filteredProducts}
+                keyExtractor={(item) => item.id}
+                renderItem={renderItem}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                ListEmptyComponent={<Text>No hay productos para mostrar.</Text>}
             />
         </View>
-
-        {/* Agregar */}
-        <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => navigation.navigate('AddProduct')}
-        >
-            <Text style={styles.addButtonText}>+ Agregar producto</Text>
-        </TouchableOpacity>
-
-        {/* Lista */}
-        <FlatList
-            data={filteredProducts}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            ListEmptyComponent={<Text>No hay productos para mostrar.</Text>}
-        />
-        </View>
     );
-    }
+}
 
-    const styles = StyleSheet.create({
+// 🎨 Estilos
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 15,
