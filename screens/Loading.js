@@ -1,27 +1,39 @@
 import React, { useEffect } from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 
+// ⏳ Pantalla de carga inicial (Splash Screen)
 export default function Loading({ navigation }) {
-    useEffect(() => {
-        const timer = setTimeout(() => {
-        navigation.replace('Home');
-        }, 3000); // 3 segundos
 
+    // useEffect se ejecuta al montar el componente
+    useEffect(() => {
+        // Redirige a Home después de 3 segundos
+        const timer = setTimeout(() => {
+            navigation.replace('Home');
+        }, 3000);
+
+        // Limpieza del temporizador si se desmonta antes
         return () => clearTimeout(timer);
     }, [navigation]);
 
+    // 🖼️ Render de la pantalla de carga
     return (
         <View style={styles.container}>
-        <Image source={require('../assets/logo.png')} style={styles.logo} />
-        <Text style={styles.slogan}>Porque comer bien es la base de sentirse mejor</Text>
+            {/* Logo de la app */}
+            <Image source={require('../assets/logo.png')} style={styles.logo} />
+            
+            {/* Eslogan debajo del logo */}
+            <Text style={styles.slogan}>
+                Porque comer bien es la base de sentirse mejor
+            </Text>
         </View>
     );
-    }
+}
 
-    const styles = StyleSheet.create({
+// 🎨 Estilos de la pantalla de carga
+const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#789C3B', // verde del logo
+        backgroundColor: '#789C3B', // color verde del logo
         justifyContent: 'center',
         alignItems: 'center',
     },

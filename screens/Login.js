@@ -12,35 +12,45 @@ import {
   Platform 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+
+// Firebase: login con email/contraseña, reset password y login con Google
 import { 
   signInWithEmailAndPassword, 
   sendPasswordResetEmail, 
   GoogleAuthProvider, 
   signInWithCredential 
 } from 'firebase/auth';
+
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import { auth } from '../src/config/firebaseConfig';
 
+// Necesario para completar sesión con Google en Expo
 WebBrowser.maybeCompleteAuthSession();
 
+// 🔑 Pantalla de Login
 export default function Login({ navigation }) {
+  // Estados para email, password y visibilidad de contraseña
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-const [request, response, promptAsync] = Google.useAuthRequest({
-  androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com", // 👈 el que ves en la captura
-  iosClientId: "TU_IOS_CLIENT_ID.apps.googleusercontent.com", // si no usás iOS, podés dejarlo así o borrarlo
-  expoClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",   // el de tipo Web Client
-  webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",    // igual al de arriba
-});
+  // Configuración de Google Sign-In con credenciales de Firebase
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com", 
+    iosClientId: "TU_IOS_CLIENT_ID.apps.googleusercontent.com", 
+    expoClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",   
+    webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",    
+  });
 
+  // 🟢 Manejo de respuesta de Google Sign-In
   useEffect(() => {
     if (response?.type === "success") {
       const { authentication } = response;
       if (authentication?.idToken) {
         const credential = GoogleAuthProvider.credential(authentication.idToken);
+        
+        // Autenticación con Firebase usando credencial de Google
         signInWithCredential(auth, credential)
           .then(() => {
             Alert.alert("✅ Bienvenido", "Has iniciado sesión con Google");
@@ -54,6 +64,7 @@ const [request, response, promptAsync] = Google.useAuthRequest({
     }
   }, [response]);
 
+  // 📩 Login con email y password
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Por favor ingrese ambos campos.");
@@ -66,6 +77,8 @@ const [request, response, promptAsync] = Google.useAuthRequest({
       navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
     } catch (error) {
       console.log("❌ Error Firebase:", error);
+
+      // Manejo de errores más descriptivo
       let errorMessage = "Hubo un problema al iniciar sesión.";
       switch (error.code) {
         case 'auth/invalid-email':
@@ -85,6 +98,7 @@ const [request, response, promptAsync] = Google.useAuthRequest({
     }
   };
 
+  // 🔄 Recuperar contraseña
   const handleForgotPassword = async () => {
     if (!email) {
       Alert.alert("Error", "Por favor ingresa tu correo electrónico.");
@@ -105,6 +119,7 @@ const [request, response, promptAsync] = Google.useAuthRequest({
     }
   };
 
+  // 🖼️ Interfaz de usuario del Login
   return (
     <KeyboardAvoidingView 
       style={{ flex: 1 }}
@@ -112,16 +127,17 @@ const [request, response, promptAsync] = Google.useAuthRequest({
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
+          
           {/* Header con logo */}
           <View style={styles.header}>
             <Image source={require('../assets/logo.png')} style={styles.logo} />
           </View>
 
-          {/* Formulario */}
+          {/* Formulario de login */}
           <View style={styles.form}>
             <Text style={styles.title}>Iniciar sesión</Text>
 
-            {/* Email */}
+            {/* Campo de Email */}
             <View style={styles.inputContainer}>
               <FontAwesome name="envelope" size={20} color="#777" style={styles.icon} />
               <TextInput
@@ -134,7 +150,7 @@ const [request, response, promptAsync] = Google.useAuthRequest({
               />
             </View>
 
-            {/* Password */}
+            {/* Campo de Contraseña con toggle de visibilidad */}
             <View style={styles.inputContainer}>
               <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
               <TextInput
@@ -153,17 +169,17 @@ const [request, response, promptAsync] = Google.useAuthRequest({
               </TouchableOpacity>
             </View>
 
-            {/* Forgot password */}
+            {/* Recuperar contraseña */}
             <TouchableOpacity onPress={handleForgotPassword}>
               <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
 
-            {/* Botón ingresar */}
+            {/* Botón de login normal */}
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
               <Text style={styles.buttonText}>Ingresar</Text>
             </TouchableOpacity>
 
-            {/* Botón ingresar con Google */}
+            {/* Botón de login con Google */}
             <TouchableOpacity 
               style={[styles.googleButton, { opacity: request ? 1 : 0.5 }]} 
               disabled={!request}
@@ -173,7 +189,7 @@ const [request, response, promptAsync] = Google.useAuthRequest({
               <Text style={styles.googleText}>Ingresar con Google</Text>
             </TouchableOpacity>
 
-            {/* Crear cuenta */}
+            {/* Link para crear cuenta */}
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
               <Text style={styles.signUpText}>
                 ¿No tienes una cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Crear cuenta</Text>
@@ -186,6 +202,7 @@ const [request, response, promptAsync] = Google.useAuthRequest({
   );
 }
 
+// 🎨 Estilos de la pantalla Login
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f6fa' },
   header: {

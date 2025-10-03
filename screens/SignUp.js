@@ -12,11 +12,15 @@ import {
   Platform 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+
+// Firebase: autenticación y base de datos
 import { auth, db } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 
+// 📝 Pantalla de Registro de Usuario
 export default function SignUp({ navigation }) {
+  // Estados de formulario
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -26,7 +30,9 @@ export default function SignUp({ navigation }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
+  // 📩 Registro de usuario
   const handleSignUp = async () => {
+    // Validaciones básicas
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       Alert.alert("Error", "Todos los campos son obligatorios.");
       return;
@@ -42,6 +48,7 @@ export default function SignUp({ navigation }) {
       return;
     }
 
+    // Validación de contraseña segura
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
     if (!passwordRegex.test(password)) {
       Alert.alert(
@@ -52,11 +59,11 @@ export default function SignUp({ navigation }) {
     }
 
     try {
-      // 1️⃣ Crear usuario en Firebase Auth
+      // 1️⃣ Crear usuario en Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2️⃣ Guardar datos extra en Firestore
+      // 2️⃣ Guardar datos adicionales en Firestore
       await setDoc(doc(db, "usuarios", user.uid), {
         firstName,
         lastName,
@@ -65,9 +72,11 @@ export default function SignUp({ navigation }) {
       });
 
       Alert.alert("Registro exitoso", "Usuario registrado con éxito.");
+      // Redirigir al Login tras registrarse
       navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     } catch (error) {
       console.log("❌ Error Firebase:", error);
+      // Manejo de errores comunes de Firebase
       let errorMessage = "Hubo un problema al registrar el usuario.";
       switch (error.code) {
         case 'auth/email-already-in-use':
@@ -87,6 +96,7 @@ export default function SignUp({ navigation }) {
     }
   };
 
+  // 🖼️ Interfaz de registro
   return (
     <KeyboardAvoidingView 
       style={{ flex: 1 }}
@@ -94,6 +104,7 @@ export default function SignUp({ navigation }) {
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
+          
           {/* Header con logo */}
           <View style={styles.header}>
             <Image source={require('../assets/logo.png')} style={styles.logo} />
@@ -203,6 +214,7 @@ export default function SignUp({ navigation }) {
   );
 }
 
+// 🎨 Estilos
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f6fa' },
   header: {

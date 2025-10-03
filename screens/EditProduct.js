@@ -6,88 +6,114 @@ import {
     TouchableOpacity, 
     StyleSheet, 
     Alert 
-    } from 'react-native';
-    import { doc, updateDoc } from "firebase/firestore";
-    import { db } from "../src/config/firebaseConfig";
+} from 'react-native';
 
-    export default function EditProduct({ route, navigation }) {
+// Importamos métodos para actualizar documentos en Firestore
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../src/config/firebaseConfig";
+
+// 🛠️ Componente para editar un producto existente
+export default function EditProduct({ route, navigation }) {
+    // Recibimos el producto desde la pantalla anterior
     const { product } = route.params;
 
+    // Estados iniciales con los valores actuales del producto
     const [name, setName] = useState(product.name || '');
     const [quantity, setQuantity] = useState(product.quantity?.toString() || '');
     const [price, setPrice] = useState(product.price?.toString() || '');
     const [description, setDescription] = useState(product.description || '');
     const [imageUrl, setImageUrl] = useState(product.imageUrl || '');
 
+    // 🔑 Función para actualizar el producto en Firestore
     const handleUpdate = async () => {
+        // Validación: todos los campos son obligatorios
         if (!name || !quantity || !price || !imageUrl) {
-        Alert.alert("Error", "Todos los campos son obligatorios");
-        return;
+            Alert.alert("Error", "Todos los campos son obligatorios");
+            return;
         }
 
         try {
-        const productRef = doc(db, "productos", product.id);
-        await updateDoc(productRef, {
-            name,
-            quantity: parseInt(quantity),
-            price: parseFloat(price),
-            description,
-            imageUrl,
-        });
+            // Obtenemos referencia al documento en Firestore
+            const productRef = doc(db, "productos", product.id);
 
-        Alert.alert("✅ Producto actualizado", `${name} se modificó con éxito`);
-        navigation.goBack();
+            // Actualizamos con los nuevos valores
+            await updateDoc(productRef, {
+                name,
+                quantity: parseInt(quantity),   // convertir cantidad a entero
+                price: parseFloat(price),       // convertir precio a decimal
+                description,
+                imageUrl,
+            });
+
+            // ✅ Aviso de éxito
+            Alert.alert("✅ Producto actualizado", `${name} se modificó con éxito`);
+
+            // Volvemos a la pantalla anterior
+            navigation.goBack();
         } catch (error) {
-        console.log("❌ Error al actualizar producto:", error);
-        Alert.alert("Error", "No se pudo actualizar el producto.");
+            // Manejo de errores
+            console.log("❌ Error al actualizar producto:", error);
+            Alert.alert("Error", "No se pudo actualizar el producto.");
         }
     };
 
+    // 🖼️ Interfaz de usuario
     return (
         <View style={styles.container}>
-        <Text style={styles.title}>Editar Producto</Text>
+            <Text style={styles.title}>Editar Producto</Text>
 
-        <TextInput 
-            style={styles.input} 
-            placeholder="Nombre" 
-            value={name} 
-            onChangeText={setName} 
-        />
-        <TextInput 
-            style={styles.input} 
-            placeholder="Cantidad" 
-            value={quantity} 
-            onChangeText={setQuantity} 
-            keyboardType="numeric"
-        />
-        <TextInput 
-            style={styles.input} 
-            placeholder="Precio" 
-            value={price} 
-            onChangeText={setPrice} 
-            keyboardType="numeric"
-        />
-        <TextInput 
-            style={styles.input} 
-            placeholder="Descripción" 
-            value={description} 
-            onChangeText={setDescription} 
-        />
-        <TextInput 
-            style={styles.input} 
-            placeholder="URL de la imagen" 
-            value={imageUrl} 
-            onChangeText={setImageUrl} 
-        />
+            {/* Campo para Nombre */}
+            <TextInput 
+                style={styles.input} 
+                placeholder="Nombre" 
+                value={name} 
+                onChangeText={setName} 
+            />
 
-        <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-            <Text style={styles.buttonText}>Guardar Cambios</Text>
-        </TouchableOpacity>
+            {/* Campo para Cantidad */}
+            <TextInput 
+                style={styles.input} 
+                placeholder="Cantidad" 
+                value={quantity} 
+                onChangeText={setQuantity} 
+                keyboardType="numeric"
+            />
+
+            {/* Campo para Precio */}
+            <TextInput 
+                style={styles.input} 
+                placeholder="Precio" 
+                value={price} 
+                onChangeText={setPrice} 
+                keyboardType="numeric"
+            />
+
+            {/* Campo para Descripción */}
+            <TextInput 
+                style={styles.input} 
+                placeholder="Descripción" 
+                value={description} 
+                onChangeText={setDescription} 
+            />
+
+            {/* Campo para URL de la imagen */}
+            <TextInput 
+                style={styles.input} 
+                placeholder="URL de la imagen" 
+                value={imageUrl} 
+                onChangeText={setImageUrl} 
+            />
+
+            {/* Botón para guardar cambios */}
+            <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+                <Text style={styles.buttonText}>Guardar Cambios</Text>
+            </TouchableOpacity>
         </View>
     );
-    }
+}
 
-    const styles = StyleSheet.create({
+// 🎨 Estilos de la pantalla
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,

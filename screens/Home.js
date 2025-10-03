@@ -7,30 +7,38 @@ import {
   Image, 
   Alert 
 } from 'react-native';
+
+// Importamos signOut de Firebase para cerrar sesión
 import { signOut } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 
+// 🏠 Pantalla principal de inicio
 export default function Home({ navigation }) {
+
+  // 🔑 Función para cerrar sesión del usuario
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await signOut(auth);  // Firebase cierra sesión
       Alert.alert("Sesión cerrada", "Has cerrado sesión correctamente.");
+      
+      // Redirige al login y resetea la navegación
       navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     } catch (error) {
       Alert.alert("Error", "Hubo un problema al cerrar sesión.");
     }
   };
 
+  // 🖼️ Renderizado de la pantalla Home
   return (
     <View style={styles.container}>
-      {/* Logo */}
+      {/* Logo de la app */}
       <Image source={require('../assets/logo.png')} style={styles.logo} />
 
-      {/* Bienvenida */}
+      {/* Mensaje de bienvenida */}
       <Text style={styles.title}>Bienvenido a Sana-mente Natural</Text>
       <Text style={styles.subtitle}>Elige una opción para continuar</Text>
 
-      {/* Botones */}
+      {/* Botón para ver perfil */}
       <TouchableOpacity 
         style={styles.button} 
         onPress={() => navigation.navigate('Profile')}
@@ -38,6 +46,7 @@ export default function Home({ navigation }) {
         <Text style={styles.buttonText}>Ver Perfil</Text>
       </TouchableOpacity>
 
+      {/* Botón para ver productos */}
       <TouchableOpacity 
         style={styles.button} 
         onPress={() => navigation.navigate('Items')}
@@ -45,6 +54,7 @@ export default function Home({ navigation }) {
         <Text style={styles.buttonText}>Ver Productos</Text>
       </TouchableOpacity>
 
+      {/* Botón para cerrar sesión */}
       <TouchableOpacity 
         style={[styles.button, styles.logoutButton]} 
         onPress={handleLogout}
@@ -55,11 +65,12 @@ export default function Home({ navigation }) {
   );
 }
 
+// 🎨 Estilos de la pantalla Home
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center', // centra contenido verticalmente
+    alignItems: 'center',     // centra contenido horizontalmente
     padding: 20,
     backgroundColor: '#789C3B',
   },
