@@ -12,34 +12,43 @@ import {
   Platform 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-
-// Firebase: autenticación y base de datos
 import { auth, db } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 
-// 📝 Pantalla de Registro de Usuario
 export default function SignUp({ navigation }) {
-  // Estados de formulario
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
 
-  // 📩 Registro de usuario
+  // Validaciones
+  const onlyText = (value) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value);
+  const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  const validatePassword = (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(value);
+
   const handleSignUp = async () => {
-    // Validaciones básicas
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       Alert.alert("Error", "Todos los campos son obligatorios.");
       return;
     }
 
-    if (!termsAccepted) {
-      Alert.alert("Error", "Debes aceptar los términos y condiciones.");
+    if (!onlyText(firstName) || !onlyText(lastName)) {
+      Alert.alert("Error", "Nombre y apellido solo pueden contener letras.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert("Error", "El correo no es válido.");
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número.");
       return;
     }
 
@@ -48,22 +57,10 @@ export default function SignUp({ navigation }) {
       return;
     }
 
-    // Validación de contraseña segura
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-    if (!passwordRegex.test(password)) {
-      Alert.alert(
-        "Error",
-        "La contraseña debe tener al menos 6 caracteres, incluyendo una letra mayúscula, una minúscula y un número."
-      );
-      return;
-    }
-
     try {
-      // 1️⃣ Crear usuario en Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2️⃣ Guardar datos adicionales en Firestore
       await setDoc(doc(db, "usuarios", user.uid), {
         firstName,
         lastName,
@@ -72,11 +69,9 @@ export default function SignUp({ navigation }) {
       });
 
       Alert.alert("Registro exitoso", "Usuario registrado con éxito.");
-      // Redirigir al Login tras registrarse
       navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     } catch (error) {
-      console.log("❌ Error Firebase:", error);
-      // Manejo de errores comunes de Firebase
+      console.log("Error Firebase:", error);
       let errorMessage = "Hubo un problema al registrar el usuario.";
       switch (error.code) {
         case 'auth/email-already-in-use':
@@ -96,7 +91,6 @@ export default function SignUp({ navigation }) {
     }
   };
 
-  // 🖼️ Interfaz de registro
   return (
     <KeyboardAvoidingView 
       style={{ flex: 1 }}
@@ -104,13 +98,10 @@ export default function SignUp({ navigation }) {
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
-          
-          {/* Header con logo */}
           <View style={styles.header}>
             <Image source={require('../assets/logo.png')} style={styles.logo} />
           </View>
 
-          {/* Formulario */}
           <View style={styles.form}>
             <Text style={styles.title}>Crear cuenta</Text>
 
@@ -118,7 +109,10 @@ export default function SignUp({ navigation }) {
             <View style={styles.inputContainer}>
               <FontAwesome name="user" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  firstName && !onlyText(firstName) && { color: 'red' }
+                ]}
                 placeholder="Nombre"
                 value={firstName}
                 onChangeText={setFirstName}
@@ -129,7 +123,10 @@ export default function SignUp({ navigation }) {
             <View style={styles.inputContainer}>
               <FontAwesome name="user" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  lastName && !onlyText(lastName) && { color: 'red' }
+                ]}
                 placeholder="Apellido"
                 value={lastName}
                 onChangeText={setLastName}
@@ -140,7 +137,10 @@ export default function SignUp({ navigation }) {
             <View style={styles.inputContainer}>
               <FontAwesome name="envelope" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  email && !validateEmail(email) && { color: 'red' }
+                ]}
                 placeholder="Correo electrónico"
                 value={email}
                 onChangeText={setEmail}
@@ -153,7 +153,10 @@ export default function SignUp({ navigation }) {
             <View style={styles.inputContainer}>
               <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  password && !validatePassword(password) && { color: 'red' }
+                ]}
                 placeholder="Contraseña"
                 value={password}
                 onChangeText={setPassword}
@@ -172,7 +175,10 @@ export default function SignUp({ navigation }) {
             <View style={styles.inputContainer}>
               <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  confirmPassword && confirmPassword !== password && { color: 'red' }
+                ]}
                 placeholder="Confirmar contraseña"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
@@ -187,24 +193,15 @@ export default function SignUp({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            {/* Checkbox términos */}
-            <TouchableOpacity 
-              style={styles.termsContainer} 
-              onPress={() => setTermsAccepted(!termsAccepted)}
-            >
-              <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]} />
-              <Text style={styles.termsText}>He leído y acepto los términos y condiciones</Text>
-            </TouchableOpacity>
-
             {/* Botón registrarse */}
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>
               <Text style={styles.buttonText}>Registrarse</Text>
             </TouchableOpacity>
 
-            {/* Ir a login */}
+            {/* Link para ir a login */}
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
               <Text style={styles.signUpText}>
-                ¿Ya tienes cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Inicia sesión</Text>
+                ¿Ya tenés cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Iniciá sesión</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -214,14 +211,13 @@ export default function SignUp({ navigation }) {
   );
 }
 
-// 🎨 Estilos
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f6fa' },
   header: {
     backgroundColor: '#789C3B',
     width: '100%',
     alignItems: 'center',
-    paddingVertical: 50,
+    paddingVertical: 40,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
@@ -229,18 +225,18 @@ const styles = StyleSheet.create({
   form: {
     flex: 1,
     alignItems: 'center',
-    marginTop: -30,
+    marginTop: -10,
     backgroundColor: '#fff',
     marginHorizontal: 20,
     borderRadius: 20,
-    padding: 20,
+    padding: 25,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 5,
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 20 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 25 },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -249,27 +245,20 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 20,
     width: '100%',
     height: 50,
   },
   icon: { marginRight: 10 },
-  input: { flex: 1, height: 40 },
-  termsContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  checkbox: {
-    width: 20, height: 20, borderWidth: 1, borderColor: '#789C3B', marginRight: 10, borderRadius: 5,
-  },
-  checkboxChecked: { backgroundColor: '#789C3B' },
-  termsText: { fontSize: 14, color: '#333' },
+  input: { flex: 1, height: 40, color: '#000' },
   button: {
     backgroundColor: '#789C3B',
     paddingVertical: 15,
     borderRadius: 10,
     width: '100%',
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
+    marginBottom: 25,
   },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
-  signUpText: { fontSize: 14, color: '#555' },
+  signUpText: { fontSize: 14, color: '#555', marginBottom: 10 },
 });

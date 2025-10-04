@@ -36,13 +36,25 @@ function Navigation() {
       {/* Stack principal de pantallas */}
       <Stack.Navigator initialRouteName={isAuthenticated ? "Home" : "Login"}>
         {/* Pantallas públicas */}
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="SignUp" component={SignUp} />
-
+        <Stack.Screen 
+          name="Login" 
+          component={Login} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="SignUp" 
+          component={SignUp} 
+          options={{ headerShown: false }} 
+        />
+        
         {/* Pantallas privadas (requieren estar logueado) */}
         <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="Loading" component={Loading} />
-        <Stack.Screen name="Items" component={Items} />
+        <Stack.Screen 
+          name="Loading" 
+          component={Loading} 
+          options={{ headerShown: false }} 
+        />
+                <Stack.Screen name="Items" component={Items} />
         <Stack.Screen name="AddProduct" component={AddProduct} />
         <Stack.Screen name="EditProduct" component={EditProduct} />
         <Stack.Screen name="Profile" component={Profile} />

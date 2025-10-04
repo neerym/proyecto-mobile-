@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
-// Firebase: login con email/contraseña, reset password y login con Google
 import { 
   signInWithEmailAndPassword, 
   sendPasswordResetEmail, 
@@ -25,17 +24,13 @@ import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import { auth } from '../src/config/firebaseConfig';
 
-// Necesario para completar sesión con Google en Expo
 WebBrowser.maybeCompleteAuthSession();
 
-// 🔑 Pantalla de Login
 export default function Login({ navigation }) {
-  // Estados para email, password y visibilidad de contraseña
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Configuración de Google Sign-In con credenciales de Firebase
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com", 
     iosClientId: "TU_IOS_CLIENT_ID.apps.googleusercontent.com", 
@@ -43,28 +38,24 @@ export default function Login({ navigation }) {
     webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",    
   });
 
-  // 🟢 Manejo de respuesta de Google Sign-In
   useEffect(() => {
     if (response?.type === "success") {
       const { authentication } = response;
       if (authentication?.idToken) {
         const credential = GoogleAuthProvider.credential(authentication.idToken);
-        
-        // Autenticación con Firebase usando credencial de Google
         signInWithCredential(auth, credential)
           .then(() => {
-            Alert.alert("✅ Bienvenido", "Has iniciado sesión con Google");
+            Alert.alert("Bienvenido", "Has iniciado sesión con Google");
             navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
           })
           .catch((error) => {
-            console.log("❌ Error credencial Google:", error);
+            console.log("Error credencial Google:", error);
             Alert.alert("Error", "No se pudo iniciar sesión con Google.");
           });
       }
     }
   }, [response]);
 
-  // 📩 Login con email y password
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Por favor ingrese ambos campos.");
@@ -76,9 +67,7 @@ export default function Login({ navigation }) {
       Alert.alert("Login exitoso", "Has iniciado sesión correctamente.");
       navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
     } catch (error) {
-      console.log("❌ Error Firebase:", error);
-
-      // Manejo de errores más descriptivo
+      console.log("Error Firebase:", error);
       let errorMessage = "Hubo un problema al iniciar sesión.";
       switch (error.code) {
         case 'auth/invalid-email':
@@ -98,7 +87,6 @@ export default function Login({ navigation }) {
     }
   };
 
-  // 🔄 Recuperar contraseña
   const handleForgotPassword = async () => {
     if (!email) {
       Alert.alert("Error", "Por favor ingresa tu correo electrónico.");
@@ -106,9 +94,9 @@ export default function Login({ navigation }) {
     }
     try {
       await sendPasswordResetEmail(auth, email);
-      Alert.alert("✅ Revisa tu correo", "Te enviamos un enlace para restablecer tu contraseña.");
+      Alert.alert("Revisa tu correo", "Te enviamos un enlace para restablecer tu contraseña.");
     } catch (error) {
-      console.log("❌ Error reset password:", error);
+      console.log("Error reset password:", error);
       let errorMessage = "No se pudo enviar el email de recuperación.";
       if (error.code === "auth/user-not-found") {
         errorMessage = "No existe un usuario con ese correo.";
@@ -119,13 +107,16 @@ export default function Login({ navigation }) {
     }
   };
 
-  // 🖼️ Interfaz de usuario del Login
   return (
     <KeyboardAvoidingView 
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.container}>
           
           {/* Header con logo */}
@@ -133,11 +124,11 @@ export default function Login({ navigation }) {
             <Image source={require('../assets/logo.png')} style={styles.logo} />
           </View>
 
-          {/* Formulario de login */}
+          {/* Formulario */}
           <View style={styles.form}>
             <Text style={styles.title}>Iniciar sesión</Text>
 
-            {/* Campo de Email */}
+            {/* Email */}
             <View style={styles.inputContainer}>
               <FontAwesome name="envelope" size={20} color="#777" style={styles.icon} />
               <TextInput
@@ -150,7 +141,7 @@ export default function Login({ navigation }) {
               />
             </View>
 
-            {/* Campo de Contraseña con toggle de visibilidad */}
+            {/* Password */}
             <View style={styles.inputContainer}>
               <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
               <TextInput
@@ -169,17 +160,17 @@ export default function Login({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            {/* Recuperar contraseña */}
-            <TouchableOpacity onPress={handleForgotPassword}>
+            {/* Olvidaste contraseña */}
+            <TouchableOpacity onPress={handleForgotPassword} style={{ width: "100%" }}>
               <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
 
-            {/* Botón de login normal */}
+            {/* Botón Login */}
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
               <Text style={styles.buttonText}>Ingresar</Text>
             </TouchableOpacity>
 
-            {/* Botón de login con Google */}
+            {/* Botón Google */}
             <TouchableOpacity 
               style={[styles.googleButton, { opacity: request ? 1 : 0.5 }]} 
               disabled={!request}
@@ -189,12 +180,16 @@ export default function Login({ navigation }) {
               <Text style={styles.googleText}>Ingresar con Google</Text>
             </TouchableOpacity>
 
-            {/* Link para crear cuenta */}
+            {/* Crear cuenta */}
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
               <Text style={styles.signUpText}>
-                ¿No tienes una cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Crear cuenta</Text>
+                ¿No tenés cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Registrate</Text>
               </Text>
             </TouchableOpacity>
+
+            {/* Slogan + Footer */}
+            <Text style={styles.slogan}>Porque comer bien es la base de sentirse mejor</Text>
+            <Text style={styles.footer}>© 2025 Sana-mente Natural</Text>
           </View>
         </View>
       </ScrollView>
@@ -202,14 +197,14 @@ export default function Login({ navigation }) {
   );
 }
 
-// 🎨 Estilos de la pantalla Login
+// Estilos
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f6fa' },
   header: {
     backgroundColor: '#789C3B',
     width: '100%',
     alignItems: 'center',
-    paddingVertical: 50,
+    paddingVertical: 40,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
@@ -217,18 +212,18 @@ const styles = StyleSheet.create({
   form: {
     flex: 1,
     alignItems: 'center',
-    marginTop: -30,
+    marginTop: -10,
     backgroundColor: '#fff',
     marginHorizontal: 20,
     borderRadius: 20,
-    padding: 20,
+    padding: 25,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 5,
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 20 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 25 },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -237,17 +232,17 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 25,
     width: '100%',
     height: 50,
   },
   icon: { marginRight: 10 },
   input: { flex: 1, height: 40 },
   forgotPassword: {
-    alignSelf: 'flex-end',
     color: '#789C3B',
     fontSize: 14,
-    marginBottom: 20,
+    textAlign: "right", // pegado a la derecha
+    marginBottom: 25,
   },
   button: {
     backgroundColor: '#789C3B',
@@ -255,7 +250,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   googleButton: {
@@ -267,8 +262,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     justifyContent: 'center',
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 25,
   },
   googleText: { marginLeft: 10, fontSize: 16, color: '#333' },
-  signUpText: { fontSize: 14, color: '#555' },
+  signUpText: { fontSize: 14, color: '#555', marginBottom: 20 },
+  slogan: { fontSize: 14, color: '#777', textAlign: 'center', marginTop: 10 },
+  footer: { fontSize: 12, color: '#aaa', textAlign: 'center', marginTop: 5 },
 });
