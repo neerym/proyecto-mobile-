@@ -23,7 +23,7 @@ function Navigation() {
   // Estado para saber si el usuario está autenticado
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // 🔑 Escucha cambios en la sesión de Firebase (login / logout)
+  // Escucha cambios en la sesión de Firebase (login / logout)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
       setIsAuthenticated(!!user); // true si hay usuario, false si no
@@ -34,12 +34,15 @@ function Navigation() {
   return (
     <NavigationContainer>
       {/* Stack principal de pantallas */}
-      <Stack.Navigator initialRouteName={isAuthenticated ? "Home" : "Login"}>
+      <Stack.Navigator
+        initialRouteName={isAuthenticated ? "Home" : "Login"}
+        screenOptions={{ headerShown: false }} // 👈 esto oculta el header en todas
+      >
         {/* Pantallas públicas */}
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="SignUp" component={SignUp} />
 
-        {/* Pantallas privadas (requieren estar logueado) */}
+        {/* Pantallas privadas */}
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Loading" component={Loading} />
         <Stack.Screen name="Items" component={Items} />
@@ -49,6 +52,6 @@ function Navigation() {
       </Stack.Navigator>
     </NavigationContainer>
   );
-}
+} // 👈 esta llave faltaba
 
 export default Navigation;

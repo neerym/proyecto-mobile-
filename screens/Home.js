@@ -1,44 +1,58 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
   TouchableOpacity, 
   StyleSheet, 
   Image, 
-  Alert 
+  Animated 
 } from 'react-native';
-
-// Importamos signOut de Firebase para cerrar sesión
 import { signOut } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 
-// 🏠 Pantalla principal de inicio
 export default function Home({ navigation }) {
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastAnim] = useState(new Animated.Value(0));
 
-  // 🔑 Función para cerrar sesión del usuario
+  const showToast = () => {
+    setToastVisible(true);
+    Animated.timing(toastAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(toastAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setToastVisible(false));
+      }, 2000);
+    });
+  };
+
   const handleLogout = async () => {
     try {
-      await signOut(auth);  // Firebase cierra sesión
-      Alert.alert("Sesión cerrada", "Has cerrado sesión correctamente.");
-      
-      // Redirige al login y resetea la navegación
-      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+      await signOut(auth);
+      showToast();
+      setTimeout(() => {
+        navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+      }, 1500);
     } catch (error) {
-      Alert.alert("Error", "Hubo un problema al cerrar sesión.");
+      console.log("❌ Error al cerrar sesión:", error);
     }
   };
 
-  // 🖼️ Renderizado de la pantalla Home
   return (
     <View style={styles.container}>
-      {/* Logo de la app */}
+      {/* Logo */}
       <Image source={require('../assets/logo.png')} style={styles.logo} />
 
-      {/* Mensaje de bienvenida */}
+      {/* Bienvenida */}
       <Text style={styles.title}>Bienvenido a Sana-mente Natural</Text>
       <Text style={styles.subtitle}>Elige una opción para continuar</Text>
 
-      {/* Botón para ver perfil */}
+      {/* Botones */}
       <TouchableOpacity 
         style={styles.button} 
         onPress={() => navigation.navigate('Profile')}
@@ -46,7 +60,6 @@ export default function Home({ navigation }) {
         <Text style={styles.buttonText}>Ver Perfil</Text>
       </TouchableOpacity>
 
-      {/* Botón para ver productos */}
       <TouchableOpacity 
         style={styles.button} 
         onPress={() => navigation.navigate('Items')}
@@ -54,23 +67,39 @@ export default function Home({ navigation }) {
         <Text style={styles.buttonText}>Ver Productos</Text>
       </TouchableOpacity>
 
-      {/* Botón para cerrar sesión */}
       <TouchableOpacity 
         style={[styles.button, styles.logoutButton]} 
         onPress={handleLogout}
       >
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
+
+      {/* ✅ Toast flotante */}
+      {toastVisible && (
+        <Animated.View
+          style={[
+            styles.toast,
+            {
+              opacity: toastAnim,
+              transform: [{ translateY: toastAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [50, 0],
+              }) }],
+            },
+          ]}
+        >
+          <Text style={styles.toastText}>✅ Sesión cerrada correctamente</Text>
+        </Animated.View>
+      )}
     </View>
   );
 }
 
-// 🎨 Estilos de la pantalla Home
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center', // centra contenido verticalmente
-    alignItems: 'center',     // centra contenido horizontalmente
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
     backgroundColor: '#789C3B',
   },
@@ -115,5 +144,23 @@ const styles = StyleSheet.create({
     color: '#789C3B',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  toast: {
+    position: 'absolute',
+    bottom: 40,
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  toastText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
   },
 });
