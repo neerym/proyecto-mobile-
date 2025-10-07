@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   View, 
   Text, 
   TextInput, 
   TouchableOpacity, 
   StyleSheet, 
-  Alert, 
   Image, 
   KeyboardAvoidingView, 
   ScrollView, 
-  Platform 
+  Platform, 
+  Animated 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { auth, db } from '../src/config/firebaseConfig';
@@ -26,34 +26,51 @@ export default function SignUp({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Toast animado
+  const [toast, setToast] = useState({ visible: false, message: '', type: '' });
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const showToast = (message, type) => {
+    setToast({ visible: true, message, type });
+    Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+
+    // Duración del toast (3.5 segundos)
+    setTimeout(() => {
+      Animated.timing(fadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start(() => {
+        setToast({ visible: false, message: '', type: '' });
+      });
+    }, 3500);
+  };
+
   // Validaciones
   const onlyText = (value) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value);
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   const validatePassword = (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(value);
 
   const handleSignUp = async () => {
+    // Verifica si hay campos vacíos
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
+      showToast("Todos los campos son obligatorios", "error");
       return;
     }
 
     if (!onlyText(firstName) || !onlyText(lastName)) {
-      Alert.alert("Error", "Nombre y apellido solo pueden contener letras.");
+      showToast("Nombre y apellido solo pueden contener letras", "error");
       return;
     }
 
     if (!validateEmail(email)) {
-      Alert.alert("Error", "El correo no es válido.");
+      showToast("El formato del correo no es válido", "error");
       return;
     }
 
     if (!validatePassword(password)) {
-      Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número.");
+      showToast("La contraseña debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número", "error");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Las contraseñas no coinciden.");
+      showToast("Las contraseñas no coinciden", "error");
       return;
     }
 
@@ -68,8 +85,13 @@ export default function SignUp({ navigation }) {
         createdAt: new Date()
       });
 
-      Alert.alert("Registro exitoso", "Usuario registrado con éxito.");
-      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+      showToast("✅ Registro exitoso", "success");
+
+      // Espera 3.5 s antes de redirigir al login
+      setTimeout(() => {
+        navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+      }, 3500);
+
     } catch (error) {
       console.log("Error Firebase:", error);
       let errorMessage = "Hubo un problema al registrar el usuario.";
@@ -87,7 +109,7 @@ export default function SignUp({ navigation }) {
           errorMessage = "Error de conexión, por favor intenta más tarde.";
           break;
       }
-      Alert.alert("Error", errorMessage);
+      showToast(`❌ ${errorMessage}`, "error");
     }
   };
 
@@ -105,42 +127,32 @@ export default function SignUp({ navigation }) {
           <View style={styles.form}>
             <Text style={styles.title}>Crear cuenta</Text>
 
-            {/* Nombre */}
             <View style={styles.inputContainer}>
               <FontAwesome name="user" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={[
-                  styles.input,
-                  firstName && !onlyText(firstName) && { color: 'red' }
-                ]}
+                style={[styles.input, firstName && !onlyText(firstName) && { color: 'red' }]}
                 placeholder="Nombre"
                 value={firstName}
                 onChangeText={setFirstName}
               />
             </View>
+            {firstName && !onlyText(firstName) && <Text style={styles.errorText}>Solo se permiten letras</Text>}
 
-            {/* Apellido */}
             <View style={styles.inputContainer}>
               <FontAwesome name="user" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={[
-                  styles.input,
-                  lastName && !onlyText(lastName) && { color: 'red' }
-                ]}
+                style={[styles.input, lastName && !onlyText(lastName) && { color: 'red' }]}
                 placeholder="Apellido"
                 value={lastName}
                 onChangeText={setLastName}
               />
             </View>
+            {lastName && !onlyText(lastName) && <Text style={styles.errorText}>Solo se permiten letras</Text>}
 
-            {/* Correo */}
             <View style={styles.inputContainer}>
               <FontAwesome name="envelope" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={[
-                  styles.input,
-                  email && !validateEmail(email) && { color: 'red' }
-                ]}
+                style={[styles.input, email && !validateEmail(email) && { color: 'red' }]}
                 placeholder="Correo electrónico"
                 value={email}
                 onChangeText={setEmail}
@@ -148,57 +160,44 @@ export default function SignUp({ navigation }) {
                 autoCapitalize="none"
               />
             </View>
+            {email && !validateEmail(email) && <Text style={styles.errorText}>Correo no válido</Text>}
 
-            {/* Contraseña */}
             <View style={styles.inputContainer}>
               <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={[
-                  styles.input,
-                  password && !validatePassword(password) && { color: 'red' }
-                ]}
+                style={[styles.input, password && !validatePassword(password) && { color: 'red' }]}
                 placeholder="Contraseña"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
               />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <FontAwesome 
-                  name={showPassword ? "eye-slash" : "eye"} 
-                  size={20} 
-                  color="#777" 
-                />
+                <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#777" />
               </TouchableOpacity>
             </View>
+            {password && !validatePassword(password) && (
+              <Text style={styles.errorText}>Debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número</Text>
+            )}
 
-            {/* Confirmar contraseña */}
             <View style={styles.inputContainer}>
               <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={[
-                  styles.input,
-                  confirmPassword && confirmPassword !== password && { color: 'red' }
-                ]}
+                style={[styles.input, confirmPassword && confirmPassword !== password && { color: 'red' }]}
                 placeholder="Confirmar contraseña"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showConfirmPassword}
               />
               <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                <FontAwesome 
-                  name={showConfirmPassword ? "eye-slash" : "eye"} 
-                  size={20} 
-                  color="#777" 
-                />
+                <FontAwesome name={showConfirmPassword ? "eye-slash" : "eye"} size={20} color="#777" />
               </TouchableOpacity>
             </View>
+            {confirmPassword && confirmPassword !== password && <Text style={styles.errorText}>Las contraseñas no coinciden</Text>}
 
-            {/* Botón registrarse */}
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>
               <Text style={styles.buttonText}>Registrarse</Text>
             </TouchableOpacity>
 
-            {/* Link para ir a login */}
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
               <Text style={styles.signUpText}>
                 ¿Ya tenés cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Iniciá sesión</Text>
@@ -206,11 +205,30 @@ export default function SignUp({ navigation }) {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Toast */}
+        {toast.visible && (
+          <Animated.View
+            style={[
+              styles.toast,
+              { 
+                opacity: fadeAnim,
+                backgroundColor: toast.type === "success" ? "#4CAF50" : "#E53935"
+              }
+            ]}
+          >
+            <Text style={styles.toastText}>
+              {toast.type === "success" ? "✅ " : "❌ "}
+              {toast.message}
+            </Text>
+          </Animated.View>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
+// Estilos
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f6fa' },
   header: {
@@ -245,20 +263,33 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     paddingHorizontal: 10,
-    marginBottom: 20,
+    marginBottom: 15,
     width: '100%',
     height: 50,
   },
   icon: { marginRight: 10 },
-  input: { flex: 1, height: 40, color: '#000' },
+  input: { flex: 1, height: 40 },
+  errorText: { color: 'red', fontSize: 12, marginTop: -10, marginBottom: 10, alignSelf: 'flex-start' },
   button: {
     backgroundColor: '#789C3B',
     paddingVertical: 15,
     borderRadius: 10,
     width: '100%',
     alignItems: 'center',
+    marginTop: 10,
     marginBottom: 25,
   },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   signUpText: { fontSize: 14, color: '#555', marginBottom: 10 },
+  toast: {
+    position: 'absolute',
+    bottom: 40,
+    left: 20,
+    right: 20,
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    elevation: 5,
+  },
+  toastText: { color: '#fff', fontSize: 16, fontWeight: '500' },
 });
