@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -7,14 +7,37 @@ import {
   Image, 
   Animated 
 } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 import { signOut } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 
 export default function Home({ navigation }) {
   const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const [toastAnim] = useState(new Animated.Value(0));
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [scaleAnim] = useState(new Animated.Value(0.9));
 
-  const showToast = () => {
+  // 🔄 Animación de entrada de las tarjetas
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 6,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  // Toast animado
+  const showToast = (message) => {
+    setToastMessage(message);
     setToastVisible(true);
     Animated.timing(toastAnim, {
       toValue: 1,
@@ -27,14 +50,15 @@ export default function Home({ navigation }) {
           duration: 300,
           useNativeDriver: true,
         }).start(() => setToastVisible(false));
-      }, 2000);
+      }, 2500);
     });
   };
 
+  // Cierre de sesión
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      showToast();
+      showToast("✅ Sesión cerrada correctamente");
       setTimeout(() => {
         navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
       }, 1500);
@@ -43,30 +67,50 @@ export default function Home({ navigation }) {
     }
   };
 
+  // Mensaje para módulos no disponibles
+  const handleUnavailable = () => {
+    showToast("🚧 Módulo en desarrollo");
+  };
+
   return (
     <View style={styles.container}>
       {/* Logo */}
       <Image source={require('../assets/logo.png')} style={styles.logo} />
+      <Text style={styles.title}>Panel Principal</Text>
+      <Text style={styles.subtitle}>Seleccioná un módulo para continuar</Text>
 
-      {/* Bienvenida */}
-      <Text style={styles.title}>Bienvenido a Sana-mente Natural</Text>
-      <Text style={styles.subtitle}>Elige una opción para continuar</Text>
-
-      {/* Botones */}
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={() => navigation.navigate('Profile')}
+      {/* Dashboard con animación */}
+      <Animated.View 
+        style={[
+          styles.grid,
+          { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+        ]}
       >
-        <Text style={styles.buttonText}>Ver Perfil</Text>
-      </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.card} 
+          onPress={() => navigation.navigate('Items')}
+        >
+          <FontAwesome name="shopping-cart" size={40} color="#789C3B" />
+          <Text style={styles.cardText}>Productos</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={() => navigation.navigate('Items')}
-      >
-        <Text style={styles.buttonText}>Ver Productos</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+          <FontAwesome name="truck" size={40} color="#789C3B" />
+          <Text style={styles.cardText}>Proveedores</Text>
+        </TouchableOpacity>
 
+        <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+          <FontAwesome name="tags" size={40} color="#789C3B" />
+          <Text style={styles.cardText}>Marcas</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+          <FontAwesome name="folder-open" size={40} color="#789C3B" />
+          <Text style={styles.cardText}>Categorías</Text>
+        </TouchableOpacity>
+      </Animated.View>
+
+      {/* Botón cerrar sesión */}
       <TouchableOpacity 
         style={[styles.button, styles.logoutButton]} 
         onPress={handleLogout}
@@ -74,76 +118,99 @@ export default function Home({ navigation }) {
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
 
-      {/* ✅ Toast flotante */}
+      {/* Toast flotante */}
       {toastVisible && (
         <Animated.View
           style={[
             styles.toast,
             {
               opacity: toastAnim,
-              transform: [{ translateY: toastAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [50, 0],
-              }) }],
+              transform: [{
+                translateY: toastAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [50, 0],
+                }),
+              }],
             },
           ]}
         >
-          <Text style={styles.toastText}>✅ Sesión cerrada correctamente</Text>
+          <Text style={styles.toastText}>{toastMessage}</Text>
         </Animated.View>
       )}
     </View>
   );
 }
 
+// 🎨 Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#789C3B',
+    backgroundColor: '#789C3B', // fondo verde principal
+    paddingTop: 60,
   },
   logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 20,
+    width: 100,
+    height: 100,
+    marginBottom: 15,
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#2e7d32',
+    color: '#fff',
     marginBottom: 5,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 30,
+    fontSize: 15,
+    color: '#f0f0f0',
+    marginBottom: 25,
     textAlign: 'center',
   },
-  button: {
-    backgroundColor: '#fff',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    width: '80%',
-    alignItems: 'center',
-    marginBottom: 15,
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 15,
+    width: '90%',
   },
-  buttonText: {
-    color: '#789C3B',
-    fontSize: 16,
+  card: {
+    backgroundColor: '#fff',
+    width: '42%',
+    aspectRatio: 1,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 8,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 4,
+  },
+  cardText: {
+    color: '#2e7d32',
     fontWeight: 'bold',
+    marginTop: 10,
+    fontSize: 16,
+  },
+  button: {
+    marginTop: 40,
+    backgroundColor: '#fff',
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+    elevation: 3,
   },
   logoutButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#789C3B',
+    borderColor: '#2e7d32',
+    borderWidth: 1.5,
   },
   logoutText: {
-    color: '#789C3B',
-    fontSize: 16,
+    color: '#2e7d32',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   toast: {
     position: 'absolute',
