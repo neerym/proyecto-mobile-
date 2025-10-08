@@ -118,11 +118,18 @@ export default function SignUp({ navigation }) {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <Image source={require('../assets/logo.png')} style={styles.logo} />
-          </View>
+      {/* Scroll general de la pantalla (permite moverse cuando el teclado aparece) */}
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}  // hace que el contenido use todo el espacio disponible
+          keyboardShouldPersistTaps="handled"      // permite tocar campos o botones aunque el teclado esté abierto
+          automaticallyAdjustKeyboardInsets={true} // ajusta automáticamente el scroll para que el teclado no tape los inputs
+          showsVerticalScrollIndicator={false}     // oculta la barrita de desplazamiento lateral (solo estético)
+        >
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <Image source={require('../assets/logo.png')} style={styles.logo} />
+            </View>
+
 
           <View style={styles.form}>
             <Text style={styles.title}>Crear cuenta</Text>
