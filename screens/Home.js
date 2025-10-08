@@ -18,7 +18,6 @@ export default function Home({ navigation }) {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [scaleAnim] = useState(new Animated.Value(0.9));
 
-  // 🔄 Animación de entrada de las tarjetas
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -35,7 +34,6 @@ export default function Home({ navigation }) {
     ]).start();
   }, []);
 
-  // Toast animado
   const showToast = (message) => {
     setToastMessage(message);
     setToastVisible(true);
@@ -54,7 +52,6 @@ export default function Home({ navigation }) {
     });
   };
 
-  // Cierre de sesión
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -63,23 +60,20 @@ export default function Home({ navigation }) {
         navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
       }, 1500);
     } catch (error) {
-      console.log("❌ Error al cerrar sesión:", error);
+      console.log("Error al cerrar sesión:", error);
     }
   };
 
-  // Mensaje para módulos no disponibles
   const handleUnavailable = () => {
     showToast("🚧 Módulo en desarrollo");
   };
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <Image source={require('../assets/logo.png')} style={styles.logo} />
       <Text style={styles.title}>Panel Principal</Text>
       <Text style={styles.subtitle}>Seleccioná un módulo para continuar</Text>
 
-      {/* Dashboard con animación */}
       <Animated.View 
         style={[
           styles.grid,
@@ -118,7 +112,14 @@ export default function Home({ navigation }) {
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
 
-      {/* Toast flotante */}
+      {/* Botón ver perfil */}
+      <TouchableOpacity 
+        style={[styles.button, styles.profileButton]} 
+        onPress={() => navigation.navigate('Profile')}
+      >
+        <Text style={styles.profileText}>Ver perfil</Text>
+      </TouchableOpacity>
+
       {toastVisible && (
         <Animated.View
           style={[
@@ -141,13 +142,12 @@ export default function Home({ navigation }) {
   );
 }
 
-// 🎨 Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#789C3B', // fondo verde principal
+    backgroundColor: '#789C3B',
     paddingTop: 60,
   },
   logo: {
@@ -196,19 +196,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    marginTop: 40,
     backgroundColor: '#fff',
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 10,
     elevation: 3,
+    width: '70%',
+    alignItems: 'center',
+    marginTop: 15,
   },
   logoutButton: {
     borderColor: '#2e7d32',
     borderWidth: 1.5,
+    marginTop: 40,
   },
   logoutText: {
     color: '#2e7d32',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  profileButton: {
+    borderColor: '#2e7d32',
+    borderWidth: 1.5,
+    backgroundColor: '#2e7d32',
+  },
+  profileText: {
+    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },

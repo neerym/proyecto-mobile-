@@ -11,23 +11,17 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-
-// Firestore: lectura en tiempo real y borrado
 import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../src/config/firebaseConfig';
 
-// 📦 Pantalla de listado de productos
 export default function Items({ navigation }) {
-    // Estados
-    const [search, setSearch] = useState('');     // filtro de búsqueda
-    const [products, setProducts] = useState([]); // lista de productos
-    const [loading, setLoading] = useState(true); // indicador de carga inicial
+    const [search, setSearch] = useState('');
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // 🔄 Cargar productos en tiempo real con onSnapshot
+    // Cargar productos en tiempo real
     useEffect(() => {
         const ref = collection(db, 'productos');
-
-        // Suscripción a cambios en la colección "productos"
         const unsubscribe = onSnapshot(
             ref,
             (snapshot) => {
@@ -36,31 +30,27 @@ export default function Items({ navigation }) {
                     ...d.data(),
                 }));
 
-                // Ordena los productos por fecha de creación (si existe)
                 const ts = (x) =>
                     x?.seconds
                         ? x.seconds
                         : typeof x === 'number'
                         ? x
                         : 0;
-
                 items.sort((a, b) => ts(b.createdAt) - ts(a.createdAt));
 
                 setProducts(items);
                 setLoading(false);
             },
             (error) => {
-                console.log('❌ Error onSnapshot:', error);
+                console.log('Error onSnapshot:', error);
                 Alert.alert('Error', 'No se pudieron cargar los productos.');
                 setLoading(false);
             }
         );
-
-        // Limpia la suscripción cuando el componente se desmonta
         return () => unsubscribe();
     }, []);
 
-    // 🗑️ Eliminar producto con confirmación
+    // Eliminar producto
     const handleDelete = (id, name) => {
         Alert.alert(
             'Eliminar producto',
@@ -73,9 +63,9 @@ export default function Items({ navigation }) {
                     onPress: async () => {
                         try {
                             await deleteDoc(doc(db, 'productos', id));
-                            Alert.alert('✅ Eliminado', `${name} fue borrado.`);
+                            Alert.alert('Eliminado', `${name} fue borrado.`);
                         } catch (error) {
-                            console.log('❌ Error al eliminar:', error);
+                            console.log('Error al eliminar:', error);
                             Alert.alert('Error', 'No se pudo eliminar el producto.');
                         }
                     },
@@ -84,39 +74,32 @@ export default function Items({ navigation }) {
         );
     };
 
-    // 🔎 Filtrar productos según búsqueda
+    // Filtro de búsqueda
     const filteredProducts = products.filter((p) =>
         (p.name || '').toLowerCase().includes(search.toLowerCase())
     );
 
-    // 🎨 Renderizado de cada tarjeta de producto
+    // Renderizado de cada producto
     const renderItem = ({ item }) => (
         <View style={styles.card}>
-            {/* Imagen del producto */}
             <Image
                 source={{
                     uri: item.imageUrl || 'https://via.placeholder.com/80',
                 }}
                 style={styles.image}
             />
-
-            {/* Información principal */}
             <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text>Cantidad: {item.quantity} u</Text>
                 <Text>Precio: ${item.price} c/u</Text>
                 {item.description ? <Text>Descripción: {item.description}</Text> : null}
             </View>
-
-            {/* Botón de edición */}
             <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => navigation.navigate('EditProduct', { product: item })}
             >
                 <FontAwesome name="pencil" size={20} color="#555" />
             </TouchableOpacity>
-
-            {/* Botón de eliminación */}
             <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => handleDelete(item.id, item.name)}
@@ -126,7 +109,6 @@ export default function Items({ navigation }) {
         </View>
     );
 
-    // 🔄 Muestra loader mientras carga
     if (loading) {
         return (
             <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -136,9 +118,18 @@ export default function Items({ navigation }) {
         );
     }
 
-    // 🖼️ Interfaz principal
     return (
         <View style={styles.container}>
+
+            {/* Botón volver al Home */}
+            <TouchableOpacity 
+                style={styles.backButton} 
+                onPress={() => navigation.navigate('Home')}
+            >
+                <FontAwesome name="arrow-left" size={18} color="#fff" />
+                <Text style={styles.backText}>Volver al inicio</Text>
+            </TouchableOpacity>
+
             {/* Barra de búsqueda */}
             <View style={styles.searchContainer}>
                 <FontAwesome name="search" size={20} color="#555" />
@@ -150,7 +141,7 @@ export default function Items({ navigation }) {
                 />
             </View>
 
-            {/* Botón para ir a agregar producto */}
+            {/* Botón para agregar producto */}
             <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => navigation.navigate('AddProduct')}
@@ -170,12 +161,26 @@ export default function Items({ navigation }) {
     );
 }
 
-// 🎨 Estilos
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 15,
         backgroundColor: '#f5f6fa',
+    },
+    backButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#789C3B',
+        alignSelf: 'flex-start',
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        borderRadius: 8,
+        marginBottom: 15,
+    },
+    backText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        marginLeft: 8,
     },
     searchContainer: {
         flexDirection: 'row',
