@@ -6,12 +6,11 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   Image, 
-  KeyboardAvoidingView, 
-  ScrollView, 
   Platform, 
   Animated 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; // ✅ nuevo import
 import { auth, db } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -34,7 +33,6 @@ export default function SignUp({ navigation }) {
     setToast({ visible: true, message, type });
     Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
 
-    // Duración del toast (3.5 segundos)
     setTimeout(() => {
       Animated.timing(fadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }).start(() => {
         setToast({ visible: false, message: '', type: '' });
@@ -48,7 +46,6 @@ export default function SignUp({ navigation }) {
   const validatePassword = (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(value);
 
   const handleSignUp = async () => {
-    // Verifica si hay campos vacíos
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       showToast("Todos los campos son obligatorios", "error");
       return;
@@ -87,7 +84,6 @@ export default function SignUp({ navigation }) {
 
       showToast("✅ Registro exitoso", "success");
 
-      // Espera 3.5 s antes de redirigir al login
       setTimeout(() => {
         navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
       }, 3500);
@@ -114,106 +110,100 @@ export default function SignUp({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      {/* Scroll general de la pantalla (permite moverse cuando el teclado aparece) */}
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}  // hace que el contenido use todo el espacio disponible
-          keyboardShouldPersistTaps="handled"      // permite tocar campos o botones aunque el teclado esté abierto
-          automaticallyAdjustKeyboardInsets={true} // ajusta automáticamente el scroll para que el teclado no tape los inputs
-          showsVerticalScrollIndicator={false}     // oculta la barrita de desplazamiento lateral (solo estético)
-        >
-          <View style={styles.container}>
-            <View style={styles.header}>
-              <Image source={require('../assets/logo.png')} style={styles.logo} />
-            </View>
-
-
-          <View style={styles.form}>
-            <Text style={styles.title}>Crear cuenta</Text>
-
-            <View style={styles.inputContainer}>
-              <FontAwesome name="user" size={20} color="#777" style={styles.icon} />
-              <TextInput
-                style={[styles.input, firstName && !onlyText(firstName) && { color: 'red' }]}
-                placeholder="Nombre"
-                value={firstName}
-                onChangeText={setFirstName}
-              />
-            </View>
-            {firstName && !onlyText(firstName) && <Text style={styles.errorText}>Solo se permiten letras</Text>}
-
-            <View style={styles.inputContainer}>
-              <FontAwesome name="user" size={20} color="#777" style={styles.icon} />
-              <TextInput
-                style={[styles.input, lastName && !onlyText(lastName) && { color: 'red' }]}
-                placeholder="Apellido"
-                value={lastName}
-                onChangeText={setLastName}
-              />
-            </View>
-            {lastName && !onlyText(lastName) && <Text style={styles.errorText}>Solo se permiten letras</Text>}
-
-            <View style={styles.inputContainer}>
-              <FontAwesome name="envelope" size={20} color="#777" style={styles.icon} />
-              <TextInput
-                style={[styles.input, email && !validateEmail(email) && { color: 'red' }]}
-                placeholder="Correo electrónico"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-            {email && !validateEmail(email) && <Text style={styles.errorText}>Correo no válido</Text>}
-
-            <View style={styles.inputContainer}>
-              <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
-              <TextInput
-                style={[styles.input, password && !validatePassword(password) && { color: 'red' }]}
-                placeholder="Contraseña"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#777" />
-              </TouchableOpacity>
-            </View>
-            {password && !validatePassword(password) && (
-              <Text style={styles.errorText}>Debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número</Text>
-            )}
-
-            <View style={styles.inputContainer}>
-              <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
-              <TextInput
-                style={[styles.input, confirmPassword && confirmPassword !== password && { color: 'red' }]}
-                placeholder="Confirmar contraseña"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirmPassword}
-              />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                <FontAwesome name={showConfirmPassword ? "eye-slash" : "eye"} size={20} color="#777" />
-              </TouchableOpacity>
-            </View>
-            {confirmPassword && confirmPassword !== password && <Text style={styles.errorText}>Las contraseñas no coinciden</Text>}
-
-            <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-              <Text style={styles.buttonText}>Registrarse</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.signUpText}>
-                ¿Ya tenés cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Iniciá sesión</Text>
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <KeyboardAwareScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        enableOnAndroid={true}
+        extraScrollHeight={70}   
+        keyboardOpeningTime={0}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Image source={require('../assets/logo.png')} style={styles.logo} />
         </View>
 
-        {/* Toast */}
+        <View style={styles.form}>
+          <Text style={styles.title}>Crear cuenta</Text>
+
+          <View style={styles.inputContainer}>
+            <FontAwesome name="user" size={20} color="#777" style={styles.icon} />
+            <TextInput
+              style={[styles.input, firstName && !onlyText(firstName) && { color: 'red' }]}
+              placeholder="Nombre"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+          </View>
+          {firstName && !onlyText(firstName) && <Text style={styles.errorText}>Solo se permiten letras</Text>}
+
+          <View style={styles.inputContainer}>
+            <FontAwesome name="user" size={20} color="#777" style={styles.icon} />
+            <TextInput
+              style={[styles.input, lastName && !onlyText(lastName) && { color: 'red' }]}
+              placeholder="Apellido"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+          </View>
+          {lastName && !onlyText(lastName) && <Text style={styles.errorText}>Solo se permiten letras</Text>}
+
+          <View style={styles.inputContainer}>
+            <FontAwesome name="envelope" size={20} color="#777" style={styles.icon} />
+            <TextInput
+              style={[styles.input, email && !validateEmail(email) && { color: 'red' }]}
+              placeholder="Correo electrónico"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+          {email && !validateEmail(email) && <Text style={styles.errorText}>Correo no válido</Text>}
+
+          <View style={styles.inputContainer}>
+            <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
+            <TextInput
+              style={[styles.input, password && !validatePassword(password) && { color: 'red' }]}
+              placeholder="Contraseña"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#777" />
+            </TouchableOpacity>
+          </View>
+          {password && !validatePassword(password) && (
+            <Text style={styles.errorText}>Debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número</Text>
+          )}
+
+          <View style={styles.inputContainer}>
+            <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
+            <TextInput
+              style={[styles.input, confirmPassword && confirmPassword !== password && { color: 'red' }]}
+              placeholder="Confirmar contraseña"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!showConfirmPassword}
+            />
+            <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+              <FontAwesome name={showConfirmPassword ? "eye-slash" : "eye"} size={20} color="#777" />
+            </TouchableOpacity>
+          </View>
+          {confirmPassword && confirmPassword !== password && <Text style={styles.errorText}>Las contraseñas no coinciden</Text>}
+
+          <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+            <Text style={styles.buttonText}>Registrarse</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.signUpText}>
+              ¿Ya tenés cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Iniciá sesión</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {toast.visible && (
           <Animated.View
             style={[
@@ -230,8 +220,8 @@ export default function SignUp({ navigation }) {
             </Text>
           </Animated.View>
         )}
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 
