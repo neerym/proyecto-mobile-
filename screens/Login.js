@@ -197,15 +197,15 @@ export default function Login({ navigation }) {
               <Text style={styles.buttonText}>Ingresar</Text>
             </TouchableOpacity>
 
-            {/* Botón de login con Google */}
-            <TouchableOpacity 
-              style={[styles.googleButton, { opacity: request ? 1 : 0.5 }]} 
-              disabled={!request}
-              onPress={() => promptAsync()}
-            >
-              <FontAwesome name="google" size={20} color="#db4437" />
-              <Text style={styles.googleText}>Ingresar con Google</Text>
-            </TouchableOpacity>
+            {/* Botón de login con Google (desactivado) */}
+              <TouchableOpacity 
+                style={styles.googleButtonDisabled}
+                onPress={() => showError("Próximamente: inicio con Google")}
+                activeOpacity={0.7}
+              >
+                <FontAwesome name="google" size={20} color="#999" />
+                <Text style={styles.googleTextDisabled}>Ingresar con Google</Text>
+              </TouchableOpacity>
 
             {/* Enlace para crear cuenta */}
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
@@ -318,5 +318,27 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 6,
   },
-  toastText: { color: '#fff', fontWeight: '500', textAlign: 'center' },
+  toastText: { 
+    color: '#fff', 
+    fontWeight: '500', 
+    textAlign: 'center' 
+  },
+
+  // 👉 estilos del botón Google desactivado
+  googleButtonDisabled: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#e0e0e0', // gris claro
+    borderRadius: 10,
+    paddingVertical: 12,
+    width: '100%',
+    marginBottom: 25,
+  },
+  googleTextDisabled: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#777',
+    fontWeight: 'bold',
+  },
 });
