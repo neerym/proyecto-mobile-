@@ -111,6 +111,7 @@ export default function AddProduct({ navigation }) {
 //Estiloss de la pantalla
 const styles = StyleSheet.create({
     container: {
+        paddingTop: 50,
         flex: 1,
         padding: 20,
         backgroundColor: '#f5f6fa',
