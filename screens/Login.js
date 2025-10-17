@@ -170,9 +170,11 @@ export default function Login({ navigation }) {
             </View>
 
             {/* Recuperar contraseña */}
+            <View style={{ width: '100%' }}>
             <TouchableOpacity onPress={handleForgotPassword}>
               <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
+            </View>
 
             {/* Botón de login normal */}
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -209,26 +211,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#789C3B',
     width: '100%',
     alignItems: 'center',
-    paddingVertical: 50,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingVertical:50,
   },
-  logo: { width: 100, height: 100 },
+  logo: { width: 180, height: 180 },
   form: {
     flex: 1,
     alignItems: 'center',
-    marginTop: -30,
+    marginTop: -75,
     backgroundColor: '#fff',
-    marginHorizontal: 20,
     borderRadius: 20,
     padding: 20,
+    paddingTop: 20, 
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 5,
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 20 },
+  title: { fontSize: 35, fontWeight: 'bold', color: '#103900', marginBottom: 30 },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -244,10 +244,13 @@ const styles = StyleSheet.create({
   icon: { marginRight: 10 },
   input: { flex: 1, height: 40 },
   forgotPassword: {
+    width: '100%',
     alignSelf: 'flex-end',
-    color: '#789C3B',
-    fontSize: 14,
+    color: '#789c3bff',
+    fontSize: 12,
+    marginTop: -10,
     marginBottom: 20,
+    textAlign: 'right',
   },
   button: {
     backgroundColor: '#789C3B',

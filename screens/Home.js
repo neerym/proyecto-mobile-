@@ -5,7 +5,8 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   Image, 
-  Alert 
+  Alert,
+  ImageBackground
 } from 'react-native';
 
 // Importamos signOut de Firebase para cerrar sesión
@@ -30,9 +31,13 @@ export default function Home({ navigation }) {
 
   // 🖼️ Renderizado de la pantalla Home
   return (
+    <ImageBackground
+      source={require('../assets/fondoPistacho.jpg')}
+      style={styles.background}
+      resizeMode="cover" >
     <View style={styles.container}>
       {/* Logo de la app */}
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
+      <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
 
       {/* Mensaje de bienvenida */}
       <Text style={styles.title}>Bienvenido a Sana-mente Natural</Text>
@@ -62,36 +67,52 @@ export default function Home({ navigation }) {
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
     </View>
+    </ImageBackground>
   );
 }
 
 // 🎨 Estilos de la pantalla Home
 const styles = StyleSheet.create({
+  // 🔹 Fondo con imagen
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+
+  // 🔹 Contenedor principal
   container: {
     flex: 1,
     justifyContent: 'center', // centra contenido verticalmente
     alignItems: 'center',     // centra contenido horizontalmente
     padding: 20,
-    backgroundColor: '#789C3B',
+    
   },
+
+  // 🔹 Logo
   logo: {
     width: 120,
-    height: 120,
+    height: 180,
     marginBottom: 20,
   },
+
+  // 🔹 Títulos
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#2e7d32',
+    color: '#103900',
     marginBottom: 5,
     textAlign: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)' 
   },
   subtitle: {
     fontSize: 16,
-    color: '#555',
+    color: '#103900',
     marginBottom: 30,
     textAlign: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)' 
   },
+
+  // 🔹 Botones
   button: {
     backgroundColor: '#fff',
     paddingVertical: 15,
@@ -116,4 +137,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  // 🔹 Opcional: oscurecer un poco la imagen
+  overlay: {
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    ...StyleSheet.absoluteFillObject,
+  },
 });
+
