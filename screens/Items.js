@@ -163,6 +163,7 @@ export default function Items({ navigation }) {
 
 const styles = StyleSheet.create({
     container: {
+        paddingTop: 50,
         flex: 1,
         padding: 15,
         backgroundColor: '#f5f6fa',
@@ -178,7 +179,8 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     backText: {
-        color: '#fff',
+        marginTop: 2,
+        color: '#ffffffff',
         fontWeight: 'bold',
         marginLeft: 8,
     },
