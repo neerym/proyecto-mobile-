@@ -5,14 +5,16 @@ import {
     TextInput, 
     TouchableOpacity, 
     StyleSheet, 
-    Alert 
+    Alert,
+    Image
 } from 'react-native';
 
 // Importamos funciones de Firebase para trabajar con Firestore
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../src/config/firebaseConfig";
+import defaultImage from '../assets/default.png'; 
 
-// 🛠️ Componente principal para agregar productos
+//  Componente principal para agregar productos
 export default function AddProduct({ navigation }) {
     // Estados locales para los campos del formulario
     const [name, setName] = useState('');
@@ -20,7 +22,6 @@ export default function AddProduct({ navigation }) {
     const [price, setPrice] = useState('');
     const [description, setDescription] = useState('');
     const [imageUrl, setImageUrl] = useState('');
-
     // 🔑 Función que guarda un nuevo producto en Firestore
     const handleAdd = async () => {
         // Validación: algunos campos son obligatorios
@@ -36,11 +37,11 @@ export default function AddProduct({ navigation }) {
                 quantity: parseInt(quantity),   // convierte cantidad a número entero
                 price: parseFloat(price),       // convierte precio a decimal
                 description,
-                imageUrl: imageUrl || "https://via.placeholder.com/80", // imagen por defecto si no se carga
+                 imageUrl: imageUrl ? imageUrl : Image.resolveAssetSource(defaultImage).uri,
                 createdAt: new Date(),          // fecha de creación
             });
 
-            // ✅ Mensaje de éxito
+            //  Mensaje de éxito
             Alert.alert("✅ Producto agregado", `${name} se guardó con éxito`);
 
             // ⏳ Regresa a la pantalla anterior después de 1 segundo
@@ -52,7 +53,7 @@ export default function AddProduct({ navigation }) {
         }
     };
 
-    // 🖼️ Renderizado de la interfaz de usuario
+    //  Renderizado de la interfaz de usuario
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Agregar Producto</Text>
@@ -107,7 +108,7 @@ export default function AddProduct({ navigation }) {
     );
 }
 
-// 🎨 Estilos de la pantalla
+//Estiloss de la pantalla
 const styles = StyleSheet.create({
     container: {
         flex: 1,
