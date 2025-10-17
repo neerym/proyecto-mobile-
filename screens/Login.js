@@ -145,7 +145,9 @@ export default function Login({ navigation }) {
           
           {/* Encabezado con logo */}
           <View style={styles.header}>
-            <Image source={require('../assets/logo.png')} style={styles.logo} />
+            <Text style={styles.headerText}>Sana-mente Natural</Text>
+            <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
+            
           </View>
 
           {/* Formulario principal */}
@@ -215,8 +217,8 @@ export default function Login({ navigation }) {
             </TouchableOpacity>
 
             {/* Frase de la app y pie */}
-            <Text style={styles.slogan}>Porque comer bien es la base de sentirse mejor</Text>
-            <Text style={styles.footer}>© 2025 Sana-mente Natural</Text>
+            <Text style={styles.footer}>© 2025 Sana-mente Natural</Text> 
+            <Text style={styles.footer}> Porque comer bien es la base de sentirse mejor</Text>
           </View>
         </View>
       </ScrollView>
@@ -239,26 +241,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#789C3B',
     width: '100%',
     alignItems: 'center',
-    paddingVertical: 40,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingVertical: 50,
   },
-  logo: { width: 100, height: 100 },
+  headerText: {
+  fontSize: 22,
+  color: '#fff',
+  fontWeight: 'bold',
+  marginTop: 10,
+  textAlign: 'center',
+  textShadowColor: 'rgba(0, 0, 0, 0.4)',  // sombra sutil
+  textShadowOffset: { width: 1, height: 1 },
+  textShadowRadius: 2,
+  letterSpacing: 1, // opcional, separa un poco las letras
+},
+  logo: { width: 180, height: 180 },
   form: {
     flex: 1,
     alignItems: 'center',
-    marginTop: -10,
+    marginTop: -75,
     backgroundColor: '#fff',
-    marginHorizontal: 20,
     borderRadius: 20,
-    padding: 25,
+    padding: 30,
+    paddingTop: 20, 
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
-    elevation: 5,
-  },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 25 },
+    elevation: 5},
+  title: { fontSize: 35, fontWeight: 'bold', color: '#103900', marginBottom: 30  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -275,9 +285,10 @@ const styles = StyleSheet.create({
   input: { flex: 1, height: 40 },
   forgotPassword: {
     color: '#789C3B',
-    fontSize: 14,
+    fontSize: 13,
     textAlign: "right",
-    marginBottom: 25,
+    marginBottom: 30,
+    marginTop: -15
   },
   button: {
     backgroundColor: '#789C3B',
@@ -301,9 +312,9 @@ const styles = StyleSheet.create({
   },
   googleText: { marginLeft: 10, fontSize: 16, color: '#333' },
   signUpText: { fontSize: 14, color: '#555', marginBottom: 20 },
-  slogan: { fontSize: 14, color: '#777', textAlign: 'center', marginTop: 10 },
-  footer: { fontSize: 12, color: '#aaa', textAlign: 'center', marginTop: 5 },
+  footer: { fontSize: 12, color: '#aaa', textAlign: 'center', marginTop: 10 },
   toast: {
+    
     position: 'absolute',
     bottom: 40,
     alignSelf: 'center',
@@ -339,6 +350,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 16,
     color: '#777',
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
 });
