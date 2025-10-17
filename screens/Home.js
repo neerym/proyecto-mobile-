@@ -70,7 +70,7 @@ export default function Home({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
+      <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
       <Text style={styles.title}>Panel Principal</Text>
       <Text style={styles.subtitle}>Seleccioná un módulo para continuar</Text>
 
