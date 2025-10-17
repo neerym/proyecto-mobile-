@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 
-// ⏳ Pantalla de carga inicial (Splash Screen)
+//  Pantalla de carga inicial (Splash Screen)
 export default function Loading({ navigation }) {
 
     // useEffect se ejecuta al montar el componente
@@ -15,12 +15,12 @@ export default function Loading({ navigation }) {
         return () => clearTimeout(timer);
     }, [navigation]);
 
-    // 🖼️ Render de la pantalla de carga
+    //  Render de la pantalla de carga
     return (
         <View style={styles.container}>
             {/* Logo de la app */}
-            <Image source={require('../assets/logo.png')} style={styles.logo} />
-            
+            <Text style={styles.header}>Sana-mente Natural</Text>
+            <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
             {/* Eslogan debajo del logo */}
             <Text style={styles.slogan}>
                 Porque comer bien es la base de sentirse mejor
@@ -29,7 +29,7 @@ export default function Loading({ navigation }) {
     );
 }
 
-// 🎨 Estilos de la pantalla de carga
+//  Estilos de la pantalla de carga
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -48,4 +48,15 @@ const styles = StyleSheet.create({
         marginTop: 20,
         textAlign: 'center',
     },
+  header: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
+    marginBottom: 10,
+    letterSpacing: 1.5,
+  },
 });
