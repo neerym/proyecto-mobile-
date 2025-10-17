@@ -19,7 +19,7 @@ export default function Items({ navigation }) {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Cargar productos en tiempo real
+    // Cargar productos 
     useEffect(() => {
         const ref = collection(db, 'productos');
         const unsubscribe = onSnapshot(
@@ -141,7 +141,7 @@ export default function Items({ navigation }) {
                 />
             </View>
 
-            {/* Botón para agregar producto */}
+            {/* Botón  agregar producto */}
             <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => navigation.navigate('AddProduct')}

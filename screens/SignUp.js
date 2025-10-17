@@ -10,7 +10,7 @@ import {
   Animated 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; // ✅ nuevo import
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; 
 import { auth, db } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -120,7 +120,8 @@ export default function SignUp({ navigation }) {
       >
       <View style={styles.container}>
         <View style={styles.header}>
-          <Image source={require('../assets/logo.png')} style={styles.logo} />
+          <Text style={styles.headerText}>Sana-mente Natural</Text>
+          <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
         </View>
 
         <View style={styles.form}>
@@ -233,16 +234,25 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     paddingVertical: 40,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
   },
+  headerText: {
+  paddingBottom: 10,
+  fontSize: 22,
+  color: '#fff',
+  fontWeight: 'bold',
+  marginTop: 10,
+  textAlign: 'center',
+  textShadowColor: 'rgba(0, 0, 0, 0.4)', 
+  textShadowOffset: { width: 1, height: 1 },
+  textShadowRadius: 2,
+  letterSpacing: 1, 
+},
   logo: { width: 100, height: 100 },
   form: {
     flex: 1,
     alignItems: 'center',
     marginTop: -10,
     backgroundColor: '#fff',
-    marginHorizontal: 20,
     borderRadius: 20,
     padding: 25,
     shadowColor: '#000',

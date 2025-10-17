@@ -75,7 +75,7 @@ export default function Profile({ navigation }) {
 
     return (
         <View style={styles.container}>
-            {/* Avatar del usuario */}
+            {/*usuario */}
             <View style={styles.avatarContainer}>
                 {avatar ? (
                     <Image source={{ uri: avatar }} style={styles.avatar} />
@@ -93,7 +93,7 @@ export default function Profile({ navigation }) {
                 placeholderTextColor="#ddd"
             />
 
-            {/* Email (solo lectura) */}
+            {/* Email */}
             <TextInput
                 style={[styles.input, { backgroundColor: '#e6e6e6', color: '#666' }]}
                 value={email}
@@ -119,7 +119,7 @@ export default function Profile({ navigation }) {
                 </TouchableOpacity>
             </View>
 
-            {/* URL de avatar */}
+            {/* URL avatar */}
             <TextInput
                 style={styles.input}
                 placeholder="URL de tu foto de perfil"
@@ -133,7 +133,7 @@ export default function Profile({ navigation }) {
                 <Text style={styles.saveButtonText}>Guardar cambios</Text>
             </TouchableOpacity>
 
-            {/* Volver al Home */}
+            {/* Volver a Home */}
             <TouchableOpacity 
                 style={styles.backButton}
                 onPress={() => navigation.navigate('Home')}

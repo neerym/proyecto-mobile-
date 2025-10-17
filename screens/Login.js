@@ -43,7 +43,7 @@ export default function Login({ navigation }) {
     webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",    
   });
 
-  // Login con Google
+  // Login con Google..Queda chequearlo despuess
   useEffect(() => {
     if (response?.type === "success") {
       const { authentication } = response;
@@ -56,7 +56,7 @@ export default function Login({ navigation }) {
     }
   }, [response]);
 
-  // Mostrar toast con mensaje de error
+  // toast con mensaje de error
   const showError = (message) => {
     setToastMessage(message);
     setShowToast(true);
@@ -249,10 +249,10 @@ const styles = StyleSheet.create({
   fontWeight: 'bold',
   marginTop: 10,
   textAlign: 'center',
-  textShadowColor: 'rgba(0, 0, 0, 0.4)',  // sombra sutil
+  textShadowColor: 'rgba(0, 0, 0, 0.4)',  
   textShadowOffset: { width: 1, height: 1 },
   textShadowRadius: 2,
-  letterSpacing: 1, // opcional, separa un poco las letras
+  letterSpacing: 1, 
 },
   logo: { width: 180, height: 180 },
   form: {
@@ -335,12 +335,12 @@ const styles = StyleSheet.create({
     textAlign: 'center' 
   },
 
-  // 👉 estilos del botón Google desactivado
+  //  estilos botón Google
   googleButtonDisabled: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#e0e0e0', // gris claro
+    backgroundColor: '#e0e0e0',
     borderRadius: 10,
     paddingVertical: 12,
     width: '100%',

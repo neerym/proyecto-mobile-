@@ -4,21 +4,20 @@ import { View, Image, Text, StyleSheet } from 'react-native';
 //  Pantalla de carga inicial (Splash Screen)
 export default function Loading({ navigation }) {
 
-    // useEffect se ejecuta al montar el componente
     useEffect(() => {
-        // Redirige a Home después de 3 segundos
+        // Redirige a Home 
         const timer = setTimeout(() => {
             navigation.replace('Home');
         }, 3000);
 
-        // Limpieza del temporizador si se desmonta antes
+        // Limpieza del temporizador 
         return () => clearTimeout(timer);
     }, [navigation]);
 
     //  Render de la pantalla de carga
     return (
         <View style={styles.container}>
-            {/* Logo de la app */}
+            {/* Logo  app */}
             <Text style={styles.header}>Sana-mente Natural</Text>
             <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
             {/* Eslogan debajo del logo */}
@@ -33,7 +32,7 @@ export default function Loading({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#789C3B', // color verde del logo
+        backgroundColor: '#789C3B',
         justifyContent: 'center',
         alignItems: 'center',
     },
