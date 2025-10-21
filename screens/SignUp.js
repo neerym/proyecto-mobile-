@@ -7,7 +7,8 @@ import {
   StyleSheet, 
   Image, 
   Platform, 
-  Animated 
+  Animated,
+  ImageBackground
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; 
@@ -82,7 +83,7 @@ export default function SignUp({ navigation }) {
         createdAt: new Date()
       });
 
-      showToast("✅ Registro exitoso", "success");
+      showToast("Registro exitoso", "success");
 
       setTimeout(() => {
         navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
@@ -110,13 +111,17 @@ export default function SignUp({ navigation }) {
   };
 
   return (
-          <KeyboardAwareScrollView
+        <KeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         enableOnAndroid={true}
         extraScrollHeight={70}   
         keyboardOpeningTime={0}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+      >
+      <ImageBackground
+      source={require('../assets/fondoPistacho.jpg')}
+      style={{ width: '100%'}}
       >
       <View style={styles.container}>
         <View style={styles.header}>
@@ -222,19 +227,27 @@ export default function SignUp({ navigation }) {
           </Animated.View>
         )}
       </View>
+      </ImageBackground>
     </KeyboardAwareScrollView>
   );
 }
 
 // Estilos
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f6fa' },
+  container: { flex: 1 },
   header: {
-    backgroundColor: '#789C3B',
-    width: '100%',
-    alignItems: 'center',
-    paddingVertical: 40,
+  width: '100%',
+  alignItems: 'center',
+  paddingVertical: 40,
+  backgroundColor:"rgba(29, 53, 19, 0.55)" //COLOR OPACIDAD
   },
+  backgroundImage: {
+  flex: 1,
+  resizeMode: 'cover',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%'
+},
   headerText: {
   paddingBottom: 10,
   fontSize: 22,
@@ -261,7 +274,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 5,
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 25 },
+  title: { fontSize: 35, fontWeight: 'bold', color: '#103900', marginBottom: 30  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',

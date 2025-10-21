@@ -9,7 +9,8 @@ import {
   KeyboardAvoidingView, 
   ScrollView, 
   Platform, 
-  Animated 
+  Animated,
+  ImageBackground
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -92,7 +93,7 @@ export default function Login({ navigation }) {
       await signInWithEmailAndPassword(auth, email, password);
       navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
     } catch (error) {
-      let errorMessage = "Hubo un problema al iniciar sesión.";
+      let errorMessage = "Credenciales inválidas"; //modificacion mensaje error
       switch (error.code) {
         case 'auth/invalid-email':
           errorMessage = "El formato del correo electrónico no es válido.";
@@ -101,7 +102,7 @@ export default function Login({ navigation }) {
           errorMessage = "La contraseña es incorrecta.";
           break;
         case 'auth/user-not-found':
-          errorMessage = "No se encontró un usuario con este correo.";
+          errorMessage = "No existe una cuenta asociada a este correo electrónico";
           break;
         case 'auth/network-request-failed':
           errorMessage = "Error de conexión, por favor intenta más tarde.";
@@ -119,7 +120,7 @@ export default function Login({ navigation }) {
     }
     try {
       await sendPasswordResetEmail(auth, email);
-      showError("Te enviamos un enlace para restablecer tu contraseña.");
+      showError("Te enviamos un enlace por email para restablecer tu contraseña.");
     } catch (error) {
       let errorMessage = "No se pudo enviar el email de recuperación.";
       if (error.code === "auth/user-not-found") {
@@ -136,6 +137,10 @@ export default function Login({ navigation }) {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+            <ImageBackground
+            source={require('../assets/fondoPistacho.jpg')}
+            style={{ width: '100%'}}
+          >
       <ScrollView 
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
@@ -144,11 +149,12 @@ export default function Login({ navigation }) {
         <View style={styles.container}>
           
           {/* Encabezado con logo */}
+          
           <View style={styles.header}>
             <Text style={styles.headerText}>Sana-mente Natural</Text>
             <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
-            
           </View>
+
 
           {/* Formulario principal */}
           <View style={styles.form}>
@@ -188,6 +194,7 @@ export default function Login({ navigation }) {
                 />
               </TouchableOpacity>
             </View>
+            
 
             {/* Recuperar contraseña */}
             <TouchableOpacity onPress={handleForgotPassword} style={{ width: "100%" }}>
@@ -222,6 +229,8 @@ export default function Login({ navigation }) {
           </View>
         </View>
       </ScrollView>
+      </ImageBackground>
+      
 
       {/* Toast flotante */}
       {showToast && (
@@ -231,18 +240,26 @@ export default function Login({ navigation }) {
         </Animated.View>
       )}
     </KeyboardAvoidingView>
+    
   );
 }
 
 // Estilos
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f6fa' },
+  container: { flex: 1 },
   header: {
-    backgroundColor: '#789C3B',
     width: '100%',
     alignItems: 'center',
     paddingVertical: 50,
+    backgroundColor:"rgba(29, 53, 19, 0.55)" //COLOR OPACIDAD
   },
+  backgroundImage: {
+  flex: 1,
+  resizeMode: 'cover',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%'
+},
   headerText: {
   fontSize: 22,
   color: '#fff',
@@ -256,19 +273,22 @@ const styles = StyleSheet.create({
 },
   logo: { width: 180, height: 180 },
   form: {
+    width: '100%',
     flex: 1,
     alignItems: 'center',
     marginTop: -75,
     backgroundColor: '#fff',
     borderRadius: 20,
-    padding: 30,
+    padding: 20,
     paddingTop: 20, 
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
-    elevation: 5},
-  title: { fontSize: 35, fontWeight: 'bold', color: '#103900', marginBottom: 30  },
+    elevation: 5,
+    alignSelf: 'stretch'
+  },
+  title: { fontSize: 35, fontWeight: 'bold', color: 'rgba(16, 57, 0, 1)', marginBottom: 30  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -278,7 +298,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     marginBottom: 25,
-    width: '100%',
     height: 50,
   },
   icon: { marginRight: 10 },

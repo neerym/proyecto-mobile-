@@ -9,6 +9,7 @@ import {
     Image,
     Alert,
     ActivityIndicator,
+    ImageBackground
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
@@ -120,6 +121,10 @@ export default function Items({ navigation }) {
 
     return (
         <View style={styles.container}>
+            <ImageBackground
+                source={require('../assets/fondoPistacho.jpg')}
+                style={styles.headerContainer}
+                imageStyle={styles.headerImage}  >
 
             {/* Botón volver al Home */}
             <TouchableOpacity 
@@ -127,7 +132,6 @@ export default function Items({ navigation }) {
                 onPress={() => navigation.navigate('Home')}
             >
                 <FontAwesome name="arrow-left" size={18} color="#fff" />
-                <Text style={styles.backText}>Volver al inicio</Text>
             </TouchableOpacity>
 
             {/* Barra de búsqueda */}
@@ -148,7 +152,7 @@ export default function Items({ navigation }) {
             >
                 <Text style={styles.addButtonText}>+ Agregar producto</Text>
             </TouchableOpacity>
-
+            </ImageBackground>
             {/* Lista de productos */}
             <FlatList
                 data={filteredProducts}
@@ -166,8 +170,15 @@ const styles = StyleSheet.create({
         paddingTop: 50,
         flex: 1,
         padding: 15,
-        backgroundColor: '#f5f6fa',
+        backgroundColor: '#838488ff',
     },
+headerContainer: {
+  padding: 15,
+  borderRadius: 10,
+  marginBottom: 15,
+  overflow: 'hidden', 
+  backgroundColor:"rgba(29, 53, 19, 0.55)" //COLOR OPACIDAD
+},
     backButton: {
         flexDirection: 'row',
         alignItems: 'center',
