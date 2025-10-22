@@ -9,7 +9,8 @@ import {
     Image,
     Alert,
     ActivityIndicator,
-    ImageBackground
+    ImageBackground,
+    Dimensions,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
@@ -20,7 +21,6 @@ export default function Items({ navigation }) {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Cargar productos 
     useEffect(() => {
         const ref = collection(db, 'productos');
         const unsubscribe = onSnapshot(
@@ -51,7 +51,6 @@ export default function Items({ navigation }) {
         return () => unsubscribe();
     }, []);
 
-    // Eliminar producto
     const handleDelete = (id, name) => {
         Alert.alert(
             'Eliminar producto',
@@ -75,12 +74,10 @@ export default function Items({ navigation }) {
         );
     };
 
-    // Filtro de búsqueda
     const filteredProducts = products.filter((p) =>
         (p.name || '').toLowerCase().includes(search.toLowerCase())
     );
 
-    // Renderizado de cada producto
     const renderItem = ({ item }) => (
         <View style={styles.card}>
             <Image
@@ -123,37 +120,36 @@ export default function Items({ navigation }) {
         <View style={styles.container}>
             <ImageBackground
                 source={require('../assets/fondoPistacho.jpg')}
-                style={styles.headerContainer}
-                imageStyle={styles.headerImage}  >
-
-            {/* Botón volver al Home */}
-            <TouchableOpacity 
-                style={styles.backButton} 
-                onPress={() => navigation.navigate('Home')}
+                style={styles.headerBackground}
+                resizeMode="cover"
             >
-                <FontAwesome name="arrow-left" size={18} color="#fff" />
-            </TouchableOpacity>
+                <View style={styles.header}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => navigation.navigate('Home')}
+                    >
+                        <FontAwesome name="arrow-left" size={18} color="#fff" />
+                    </TouchableOpacity>
 
-            {/* Barra de búsqueda */}
-            <View style={styles.searchContainer}>
-                <FontAwesome name="search" size={20} color="#555" />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Buscar producto..."
-                    value={search}
-                    onChangeText={setSearch}
-                />
-            </View>
+                    <View style={styles.searchContainer}>
+                        <FontAwesome name="search" size={20} color="#555" />
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Buscar producto..."
+                            value={search}
+                            onChangeText={setSearch}
+                        />
+                    </View>
 
-            {/* Botón  agregar producto */}
-            <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => navigation.navigate('AddProduct')}
-            >
-                <Text style={styles.addButtonText}>+ Agregar producto</Text>
-            </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.addButton}
+                        onPress={() => navigation.navigate('AddProduct')}
+                    >
+                        <Text style={styles.addButtonText}>+ Agregar producto</Text>
+                    </TouchableOpacity>
+                </View>
             </ImageBackground>
-            {/* Lista de productos */}
+
             <FlatList
                 data={filteredProducts}
                 keyExtractor={(item) => item.id}
@@ -170,14 +166,20 @@ const styles = StyleSheet.create({
         paddingTop: 50,
         flex: 1,
         padding: 15,
-        backgroundColor: '#838488ff',
+        backgroundColor: '#f0f1f5ff',
     },
-headerContainer: {
-  padding: 15,
-  borderRadius: 10,
-  marginBottom: 15,
-  overflow: 'hidden', 
-  backgroundColor:"rgba(29, 53, 19, 0.55)" //COLOR OPACIDAD
+    headerBackground:{
+    height: 170,
+    marginBottom: 15,
+    overflow: 'hidden', 
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius:30,
+},
+
+header:{
+    backgroundColor:"rgba(29, 53, 19, 0.55)" ,//COLOR OPACIDAD
+    margin:0,
+    width:'100%',
 },
     backButton: {
         flexDirection: 'row',
@@ -204,6 +206,8 @@ headerContainer: {
         marginBottom: 15,
         borderWidth: 1,
         borderColor: '#ccc',
+        marginRight:20,
+        marginLeft:20
     },
     searchInput: {
         flex: 1,
@@ -216,10 +220,15 @@ headerContainer: {
         borderRadius: 10,
         alignItems: 'center',
         marginBottom: 15,
+        marginRight:25,
+        marginLeft:25
+
     },
     addButtonText: {
         color: '#fff',
         fontWeight: 'bold',
+        
+
     },
     card: {
         backgroundColor: '#fff',
