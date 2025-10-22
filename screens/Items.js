@@ -128,7 +128,7 @@ export default function Items({ navigation }) {
                         style={styles.backButton}
                         onPress={() => navigation.navigate('Home')}
                     >
-                        <FontAwesome name="arrow-left" size={18} color="#fff" />
+                        <FontAwesome name="arrow-left" size={20} color="rgba(255, 255, 255, 1)" />
                     </TouchableOpacity>
 
                     <View style={styles.searchContainer}>
@@ -184,7 +184,6 @@ header:{
     backButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#789C3B',
         alignSelf: 'flex-start',
         paddingVertical: 8,
         paddingHorizontal: 15,
@@ -193,7 +192,7 @@ header:{
     },
     backText: {
         marginTop: 2,
-        color: '#ffffffff',
+        color: '#8f2ac9ff',
         fontWeight: 'bold',
         marginLeft: 8,
     },

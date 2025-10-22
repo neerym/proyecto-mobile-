@@ -37,18 +37,18 @@ export default function AddProduct({ navigation }) {
                 quantity: parseInt(quantity),   // convierte cantidad a número entero
                 price: parseFloat(price),       // convierte precio a decimal
                 description,
-                 imageUrl: imageUrl ? imageUrl : Image.resolveAssetSource(defaultImage).uri,
+                imageUrl: imageUrl ? imageUrl : Image.resolveAssetSource(defaultImage).uri,
                 createdAt: new Date(),          // fecha de creación
             });
 
             //  Mensaje de éxito
-            Alert.alert("✅ Producto agregado", `${name} se guardó con éxito`);
+            Alert.alert("Producto agregado", `${name} se guardó con éxito`);
 
             // ⏳ Regresa a la pantalla anterior después de 1 segundo
             setTimeout(() => navigation.goBack(), 1000);
         } catch (error) {
             // Manejo de errores
-            console.log("❌ Error al agregar producto:", error);
+            console.log("Error al agregar producto:", error);
             Alert.alert("Error", "No se pudo guardar el producto.");
         }
     };
@@ -66,10 +66,18 @@ export default function AddProduct({ navigation }) {
                 onChangeText={setName} 
             />
 
+            {/* Campo para Descripción */}
+            <TextInput 
+                style={styles.input} 
+                placeholder="Descripción" 
+                value={description} 
+                onChangeText={setDescription} 
+            />
+
             {/* Campo para Cantidad */}
             <TextInput 
                 style={styles.input} 
-                placeholder="Cantidad" 
+                placeholder="Stock" 
                 value={quantity} 
                 onChangeText={setQuantity} 
                 keyboardType="numeric"
@@ -84,13 +92,7 @@ export default function AddProduct({ navigation }) {
                 keyboardType="numeric"
             />
 
-            {/* Campo para Descripción */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="Descripción" 
-                value={description} 
-                onChangeText={setDescription} 
-            />
+
 
             {/* Campo opcional para URL de imagen */}
             <TextInput 
@@ -100,9 +102,15 @@ export default function AddProduct({ navigation }) {
                 onChangeText={setImageUrl} 
             />
 
-            {/* Botón para guardar el producto */}
+            {/* Botón agregar y cancelar*/}
             <TouchableOpacity style={styles.button} onPress={handleAdd}>
                 <Text style={styles.buttonText}>Guardar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+                style={[styles.button, styles.cancelButton]} 
+                onPress={() => navigation.goBack()}
+                >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
             </TouchableOpacity>
         </View>
     );
@@ -117,17 +125,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f6fa',
     },
     title: {
-        fontSize: 20,
+        fontSize: 35,
         fontWeight: 'bold',
         marginBottom: 20,
-        color: '#2e7d32',
+        color: 'rgba(16, 57, 0, 1)',
     },
     input: {
         backgroundColor: '#fff',
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: 'rgba(16, 57, 0, 1)',
         borderRadius: 10,
-        padding: 10,
+        padding: 15,
         marginBottom: 15,
     },
     button: {
@@ -141,4 +149,13 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
     },
+    cancelButton:{
+        backgroundColor:'#ffff',
+        borderWidth: 2,
+        borderColor:'#789C3B'
+    },
+    cancelButtonText:{
+        color:'#789C3B',
+        fontWeight:'bold'
+    }
 });
