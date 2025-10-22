@@ -220,8 +220,9 @@ header:{
         alignItems: 'center',
         marginBottom: 15,
         marginRight:25,
-        marginLeft:25
-
+        marginLeft:25,
+        borderColor:'#ffff',
+        borderWidth:1
     },
     addButtonText: {
         color: '#fff',
@@ -237,6 +238,8 @@ header:{
         flexDirection: 'row',
         alignItems: 'center',
         elevation: 2,
+        borderColor:'#789C3B',
+        borderWidth:0.3
     },
     image: {
         width: 80,
