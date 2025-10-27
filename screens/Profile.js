@@ -141,6 +141,10 @@ import {
                 <FontAwesome name="user-circle" size={100} color="#fff" />
             )}
 
+            <Text style={[styles.label, { alignSelf: 'center', textAlign: 'center' }]}>
+            Editar foto de perfil
+            </Text>
+
             <View style={styles.photoButtons}>
                 <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(false)}>
                 <FontAwesome name="image" size={20} color="#fff" />
@@ -155,6 +159,7 @@ import {
             </View>
 
             {/* Nombre */}
+            <Text style={styles.label}>Usuario</Text>
             <TextInput
             style={styles.input}
             placeholder="Nombre"
@@ -164,41 +169,42 @@ import {
             />
 
             {/* Email (solo lectura) */}
+            <Text style={styles.label}>Correo electrónico</Text>
             <View style={styles.disabledInput}>
             <FontAwesome name="envelope" size={18} color="#666" style={{ marginRight: 8 }} />
             <Text style={styles.disabledText}>{email}</Text>
             </View>
 
-            {/* Nueva contraseña */}
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.inputPassword}
-                        placeholder="Nueva contraseña"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry={!showPassword}
-                        placeholderTextColor="#ddd"
-                    />
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                        <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#fff" />
-                    </TouchableOpacity>
-                    </View>
+            {/* Contraseñas */}
+            <Text style={styles.label}>¿Querés cambiar tu contraseña?</Text>
 
-                    {/* Confirmar contraseña */}
-                    <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.inputPassword}
-                        placeholder="Confirmar contraseña"
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                        secureTextEntry={!showPassword}
-                        placeholderTextColor="#ddd"
-                    />
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                        <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#fff" />
-                    </TouchableOpacity>
-                </View>
+                        <View style={styles.inputContainer}>
+            <TextInput
+                style={styles.inputPassword}
+                placeholder="Nueva contraseña"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                placeholderTextColor="#ddd"
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#fff" />
+            </TouchableOpacity>
+            </View>
 
+            <View style={styles.inputContainer}>
+            <TextInput
+                style={styles.inputPassword}
+                placeholder="Confirmar contraseña"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showPassword}
+                placeholderTextColor="#ddd"
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#fff" />
+            </TouchableOpacity>
+            </View>
 
             {/* Botones */}
             <TouchableOpacity style={styles.saveButton} onPress={handleUpdateProfile}>
@@ -261,6 +267,14 @@ import {
         borderRadius: 10,
     },
     iconText: { color: '#fff', marginLeft: 5 },
+    label: {
+        alignSelf: 'flex-start',
+        color: '#fff',
+        fontWeight: '600',
+        marginBottom: 6,
+        marginLeft: 5,
+        fontSize: 15,
+    },
     input: {
         backgroundColor: 'rgba(255,255,255,0.15)',
         borderRadius: 10,
@@ -280,13 +294,21 @@ import {
         width: '100%',
     },
     disabledText: { color: '#666', fontSize: 15 },
-    passwordContainer: {
+    inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        width: '100%',
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderRadius: 10,
+        paddingHorizontal: 12,
         marginBottom: 15,
+        width: '100%',
+        height: 50,
     },
-    eyeButton: { marginLeft: -35 },
+    inputPassword: {
+        flex: 1,
+        color: '#fff',
+        fontSize: 15,
+    },
     saveButton: {
         backgroundColor: '#fff',
         paddingVertical: 15,
@@ -320,21 +342,4 @@ import {
         alignItems: 'center', 
         backgroundColor: '#789C3B'
     },
-    
-    inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    marginBottom: 15,
-    width: '100%',
-    height: 50,
-    },
-    inputPassword: {
-    flex: 1,
-    color: '#fff',
-    fontSize: 15,
-},
-
 });
