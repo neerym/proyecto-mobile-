@@ -49,7 +49,7 @@ export default function SignUp({ navigation }) {
   const handleSignUp = async () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       showToast("Todos los campos son obligatorios", "error");
-      return;
+        return;
     }
 
     if (!onlyText(firstName) || !onlyText(lastName)) {
@@ -109,7 +109,18 @@ export default function SignUp({ navigation }) {
       showToast(`❌ ${errorMessage}`, "error");
     }
   };
-
+  const isFormValid =
+    onlyText(firstName) &&
+    onlyText(lastName) &&
+    validateEmail(email) &&
+    validatePassword(password) &&
+    password === confirmPassword &&
+    firstName !== '' &&
+    lastName !== '' &&
+    email !== '' &&
+    password !== '' &&
+    confirmPassword !== '';
+    
   return (
         <KeyboardAwareScrollView
         contentContainerStyle={{ flexGrow: 1 }}
@@ -199,7 +210,11 @@ export default function SignUp({ navigation }) {
           </View>
           {confirmPassword && confirmPassword !== password && <Text style={styles.errorText}>Las contraseñas no coinciden</Text>}
 
-          <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+          <TouchableOpacity
+            style={[styles.button, !isFormValid && { opacity: 0.5 }]}
+            onPress={handleSignUp}
+            disabled={!isFormValid}
+          >
             <Text style={styles.buttonText}>Registrarse</Text>
           </TouchableOpacity>
 

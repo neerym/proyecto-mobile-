@@ -17,8 +17,6 @@ import * as AuthSession from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
 import { auth } from "../src/config/firebaseConfig";
 
-WebBrowser.maybeCompleteAuthSession();    
-
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,49 +28,36 @@ export default function Login({ navigation }) {
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
-  // Configuración para login con Google
-  const redirectUri = AuthSession.makeRedirectUri({
-    useProxy: true,
-  });
+WebBrowser.maybeCompleteAuthSession();  
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId:
-      "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
-    androidClientId:
-      "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com",
-    webClientId:
-      "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
-    responseType: "id_token",
-    scopes: ["profile", "email"],
-    redirectUri, // 👈 clave
-  });
+// --- CONFIGURACIÓN GOOGLE ---
+const redirectUri = AuthSession.makeRedirectUri({
+  useProxy: true, // 👈 evita los redirect locales exp://
+});
 
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { authentication } = response;
-      if (authentication?.idToken) {
-        const credential = GoogleAuthProvider.credential(authentication.idToken);
-        signInWithCredential(auth, credential)
-          .then(() =>
-            navigation.reset({ index: 0, routes: [{ name: "Loading" }] })
-          )
-          .catch(() => showError("No se pudo iniciar sesión con Google."));
-      }
+const [request, response, promptAsync] = Google.useAuthRequest({
+  expoClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
+  androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com",
+  webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
+  redirectUri,
+  responseType: "id_token",
+  scopes: ["profile", "email"],
+});
+
+// --- EFECTO DE LOGIN ---
+useEffect(() => {
+  if (response?.type === "success") {
+    const { authentication } = response;
+    if (authentication?.idToken) {
+      const credential = GoogleAuthProvider.credential(authentication.idToken);
+      signInWithCredential(auth, credential)
+        .then(() =>
+          navigation.reset({ index: 0, routes: [{ name: "Loading" }] })
+        )
+        .catch(() => showError("No se pudo iniciar sesión con Google."));
     }
-  }, [response]);
-
-  // Login con Google..Queda chequearlo despuess
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { authentication } = response;
-      if (authentication?.idToken) {
-        const credential = GoogleAuthProvider.credential(authentication.idToken);
-        signInWithCredential(auth, credential)
-          .then(() => navigation.reset({ index: 0, routes: [{ name: 'Loading' }] }))
-          .catch(() => showError("No se pudo iniciar sesión con Google."));
-      }
-    }
-  }, [response]);
+  }
+}, [response]);
 
   // toast con mensaje de error
   const showError = (message) => {
@@ -94,7 +79,7 @@ export default function Login({ navigation }) {
   };
 
   // Login normal con email y contraseña
- const handleLogin = async () => {
+  const handleLogin = async () => {
   // Presencia con trim
   if (!emailTrim || !passwordTrim) {
     showError("Por favor ingrese ambos campos.");
@@ -241,7 +226,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
               style={styles.googleButton}
               disabled={!request}
               onPress={() => {
-                promptAsync();
+                promptAsync({ useProxy: true });
               }}
               activeOpacity={0.8}
             >
