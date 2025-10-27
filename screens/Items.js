@@ -17,6 +17,7 @@ import {
 
     export default function Items({ navigation }) {
     const [search, setSearch] = useState('');
+    const [selectedType, setSelectedType] = useState('Todos');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -69,20 +70,26 @@ import {
         );
     };
 
-    const filteredProducts = products.filter((p) =>
-        (p.name || '').toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredProducts = products.filter((p) => {
+        const matchesSearch = (p.name || '').toLowerCase().includes(search.toLowerCase());
+        const matchesType = selectedType === 'Todos' || p.type === selectedType;
+        return matchesSearch && matchesType;
+    });
 
     const renderItem = ({ item }) => (
         <View style={styles.card}>
         <Image
-            source={{
-            uri: item.imageUrl || 'https://via.placeholder.com/80',
-            }}
+            source={
+                item.imageUrl
+                ? { uri: item.imageUrl }
+                : require('../assets/default.png')
+            }
             style={styles.image}
-        />
+            />
+
         <View style={{ flex: 1 }}>
             <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.detail}>Tipo: {item.type || 'Sin tipo'}</Text>
             <Text style={styles.detail}>Cantidad: {item.quantity} u</Text>
             <Text style={styles.detail}>Precio: ${item.price} c/u</Text>
             {item.description ? (
@@ -138,6 +145,29 @@ import {
                 onChangeText={setSearch}
                 placeholderTextColor="#888"
                 />
+            </View>
+
+            {/* 🔹 Filtros por tipo */}
+            <View style={styles.filterContainer}>
+                {['Todos', 'Alimento', 'Bebida', 'Suplemento', 'Otro'].map((type) => (
+                <TouchableOpacity
+                    key={type}
+                    style={[
+                    styles.filterButton,
+                    selectedType === type && styles.filterButtonActive,
+                    ]}
+                    onPress={() => setSelectedType(type)}
+                >
+                    <Text
+                    style={[
+                        styles.filterText,
+                        selectedType === type && styles.filterTextActive,
+                    ]}
+                    >
+                    {type}
+                    </Text>
+                </TouchableOpacity>
+                ))}
             </View>
 
             <TouchableOpacity
@@ -199,6 +229,33 @@ import {
         marginLeft: 5,
         color: '#333',
     },
+    filterContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        marginBottom: 15,
+    },
+    filterButton: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 20,
+        paddingVertical: 6,
+        paddingHorizontal: 15,
+        marginHorizontal: 5,
+        marginVertical: 4,
+        borderWidth: 1,
+        borderColor: '#fff',
+    },
+    filterButtonActive: {
+        backgroundColor: '#fff',
+    },
+    filterText: {
+        color: '#fff',
+        fontWeight: '600',
+    },
+    filterTextActive: {
+        color: '#2e7d32',
+        fontWeight: 'bold',
+    },
     addButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -217,7 +274,7 @@ import {
         fontSize: 15,
     },
     card: {
-        backgroundColor: '#e6f7caff', // tono pistacho suave
+        backgroundColor: '#e6f7ca',
         borderColor: '#789C3B',
         padding: 15,
         borderRadius: 12,
@@ -229,9 +286,8 @@ import {
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 4,
         elevation: 4,
-        borderColor: '#789C3B',
         borderWidth: 0.3,
-        opacity: 0.8,
+        opacity: 0.9,
     },
     image: {
         width: 75,
@@ -246,7 +302,7 @@ import {
         marginBottom: 3,
     },
     detail: {
-        color: '#444',
+        color: '#333',
         fontSize: 14,
     },
     actions: {
