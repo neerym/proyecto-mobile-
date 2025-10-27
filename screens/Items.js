@@ -9,25 +9,20 @@ import {
     Image,
     Alert,
     ActivityIndicator,
+    ImageBackground,
+    Dimensions,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-
-// Firestore: lectura en tiempo real y borrado
 import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../src/config/firebaseConfig';
 
-// 📦 Pantalla de listado de productos
 export default function Items({ navigation }) {
-    // Estados
-    const [search, setSearch] = useState('');     // filtro de búsqueda
-    const [products, setProducts] = useState([]); // lista de productos
-    const [loading, setLoading] = useState(true); // indicador de carga inicial
+    const [search, setSearch] = useState('');
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // 🔄 Cargar productos en tiempo real con onSnapshot
     useEffect(() => {
         const ref = collection(db, 'productos');
-
-        // Suscripción a cambios en la colección "productos"
         const unsubscribe = onSnapshot(
             ref,
             (snapshot) => {
@@ -36,31 +31,26 @@ export default function Items({ navigation }) {
                     ...d.data(),
                 }));
 
-                // Ordena los productos por fecha de creación (si existe)
                 const ts = (x) =>
                     x?.seconds
                         ? x.seconds
                         : typeof x === 'number'
                         ? x
                         : 0;
-
                 items.sort((a, b) => ts(b.createdAt) - ts(a.createdAt));
 
                 setProducts(items);
                 setLoading(false);
             },
             (error) => {
-                console.log('❌ Error onSnapshot:', error);
+                console.log('Error onSnapshot:', error);
                 Alert.alert('Error', 'No se pudieron cargar los productos.');
                 setLoading(false);
             }
         );
-
-        // Limpia la suscripción cuando el componente se desmonta
         return () => unsubscribe();
     }, []);
 
-    // 🗑️ Eliminar producto con confirmación
     const handleDelete = (id, name) => {
         Alert.alert(
             'Eliminar producto',
@@ -73,9 +63,9 @@ export default function Items({ navigation }) {
                     onPress: async () => {
                         try {
                             await deleteDoc(doc(db, 'productos', id));
-                            Alert.alert('✅ Eliminado', `${name} fue borrado.`);
+                            Alert.alert('Eliminado', `${name} fue borrado.`);
                         } catch (error) {
-                            console.log('❌ Error al eliminar:', error);
+                            console.log('Error al eliminar:', error);
                             Alert.alert('Error', 'No se pudo eliminar el producto.');
                         }
                     },
@@ -84,39 +74,30 @@ export default function Items({ navigation }) {
         );
     };
 
-    // 🔎 Filtrar productos según búsqueda
     const filteredProducts = products.filter((p) =>
         (p.name || '').toLowerCase().includes(search.toLowerCase())
     );
 
-    // 🎨 Renderizado de cada tarjeta de producto
     const renderItem = ({ item }) => (
         <View style={styles.card}>
-            {/* Imagen del producto */}
             <Image
                 source={{
                     uri: item.imageUrl || 'https://via.placeholder.com/80',
                 }}
                 style={styles.image}
             />
-
-            {/* Información principal */}
             <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text>Cantidad: {item.quantity} u</Text>
                 <Text>Precio: ${item.price} c/u</Text>
                 {item.description ? <Text>Descripción: {item.description}</Text> : null}
             </View>
-
-            {/* Botón de edición */}
             <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => navigation.navigate('EditProduct', { product: item })}
             >
                 <FontAwesome name="pencil" size={20} color="#555" />
             </TouchableOpacity>
-
-            {/* Botón de eliminación */}
             <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => handleDelete(item.id, item.name)}
@@ -126,7 +107,6 @@ export default function Items({ navigation }) {
         </View>
     );
 
-    // 🔄 Muestra loader mientras carga
     if (loading) {
         return (
             <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -136,29 +116,40 @@ export default function Items({ navigation }) {
         );
     }
 
-    // 🖼️ Interfaz principal
     return (
         <View style={styles.container}>
-            {/* Barra de búsqueda */}
-            <View style={styles.searchContainer}>
-                <FontAwesome name="search" size={20} color="#555" />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Buscar producto..."
-                    value={search}
-                    onChangeText={setSearch}
-                />
-            </View>
-
-            {/* Botón para ir a agregar producto */}
-            <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => navigation.navigate('AddProduct')}
+            <ImageBackground
+                source={require('../assets/fondoPistacho.jpg')}
+                style={styles.headerBackground}
+                resizeMode="cover"
             >
-                <Text style={styles.addButtonText}>+ Agregar producto</Text>
-            </TouchableOpacity>
+                <View style={styles.header}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => navigation.navigate('Home')}
+                    >
+                        <FontAwesome name="arrow-left" size={20} color="rgba(255, 255, 255, 1)" />
+                    </TouchableOpacity>
 
-            {/* Lista de productos */}
+                    <View style={styles.searchContainer}>
+                        <FontAwesome name="search" size={20} color="#555" />
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Buscar producto..."
+                            value={search}
+                            onChangeText={setSearch}
+                        />
+                    </View>
+
+                    <TouchableOpacity
+                        style={styles.addButton}
+                        onPress={() => navigation.navigate('AddProduct')}
+                    >
+                        <Text style={styles.addButtonText}>+ Agregar producto</Text>
+                    </TouchableOpacity>
+                </View>
+            </ImageBackground>
+
             <FlatList
                 data={filteredProducts}
                 keyExtractor={(item) => item.id}
@@ -170,12 +161,40 @@ export default function Items({ navigation }) {
     );
 }
 
-// 🎨 Estilos
 const styles = StyleSheet.create({
     container: {
+        paddingTop: 50,
         flex: 1,
         padding: 15,
-        backgroundColor: '#f5f6fa',
+        backgroundColor: '#f0f1f5ff',
+    },
+    headerBackground:{
+    height: 170,
+    marginBottom: 15,
+    overflow: 'hidden', 
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius:30,
+},
+
+header:{
+    backgroundColor:"rgba(29, 53, 19, 0.55)" ,//COLOR OPACIDAD
+    margin:0,
+    width:'100%',
+},
+    backButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        borderRadius: 8,
+        marginBottom: 15,
+    },
+    backText: {
+        marginTop: 2,
+        color: '#8f2ac9ff',
+        fontWeight: 'bold',
+        marginLeft: 8,
     },
     searchContainer: {
         flexDirection: 'row',
@@ -186,6 +205,8 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         borderWidth: 1,
         borderColor: '#ccc',
+        marginRight:20,
+        marginLeft:20
     },
     searchInput: {
         flex: 1,
@@ -198,10 +219,16 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         marginBottom: 15,
+        marginRight:25,
+        marginLeft:25,
+        borderColor:'#ffff',
+        borderWidth:1
     },
     addButtonText: {
         color: '#fff',
         fontWeight: 'bold',
+        
+
     },
     card: {
         backgroundColor: '#fff',
@@ -211,6 +238,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         elevation: 2,
+        borderColor:'#789C3B',
+        borderWidth:0.3
     },
     image: {
         width: 80,

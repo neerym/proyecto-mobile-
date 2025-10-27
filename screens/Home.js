@@ -1,119 +1,246 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
   TouchableOpacity, 
   StyleSheet, 
   Image, 
-  Alert 
+  Animated 
 } from 'react-native';
-
-// Importamos signOut de Firebase para cerrar sesión
+import { FontAwesome } from '@expo/vector-icons';
 import { signOut } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 
-// 🏠 Pantalla principal de inicio
 export default function Home({ navigation }) {
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastAnim] = useState(new Animated.Value(0));
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [scaleAnim] = useState(new Animated.Value(0.9));
 
-  // 🔑 Función para cerrar sesión del usuario
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 6,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const showToast = (message) => {
+    setToastMessage(message);
+    setToastVisible(true);
+    Animated.timing(toastAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(toastAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setToastVisible(false));
+      }, 2500);
+    });
+  };
+
   const handleLogout = async () => {
     try {
-      await signOut(auth);  // Firebase cierra sesión
-      Alert.alert("Sesión cerrada", "Has cerrado sesión correctamente.");
-      
-      // Redirige al login y resetea la navegación
-      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+      await signOut(auth);
+      showToast("✅ Sesión cerrada correctamente");
+      setTimeout(() => {
+        navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+      }, 1500);
     } catch (error) {
-      Alert.alert("Error", "Hubo un problema al cerrar sesión.");
+      console.log("Error al cerrar sesión:", error);
     }
   };
 
-  // 🖼️ Renderizado de la pantalla Home
+  const handleUnavailable = () => {
+    showToast("🚧 Módulo en desarrollo");
+  };
+
   return (
     <View style={styles.container}>
-      {/* Logo de la app */}
-      <Image source={require('../assets/logo.png')} style={styles.logo} />
+      <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
+      <Text style={styles.title}>Panel Principal</Text>
+      <Text style={styles.subtitle}>Seleccioná un módulo para continuar</Text>
 
-      {/* Mensaje de bienvenida */}
-      <Text style={styles.title}>Bienvenido a Sana-mente Natural</Text>
-      <Text style={styles.subtitle}>Elige una opción para continuar</Text>
-
-      {/* Botón para ver perfil */}
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={() => navigation.navigate('Profile')}
+      <Animated.View 
+        style={[
+          styles.grid,
+          { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+        ]}
       >
-        <Text style={styles.buttonText}>Ver Perfil</Text>
-      </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.card} 
+          onPress={() => navigation.navigate('Items')}
+        >
+          <FontAwesome name="shopping-cart" size={40} color="#789C3B" />
+          <Text style={styles.cardText}>Productos</Text>
+        </TouchableOpacity>
 
-      {/* Botón para ver productos */}
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={() => navigation.navigate('Items')}
-      >
-        <Text style={styles.buttonText}>Ver Productos</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+          <FontAwesome name="truck" size={40} color="#789C3B" />
+          <Text style={styles.cardText}>Proveedores</Text>
+        </TouchableOpacity>
 
-      {/* Botón para cerrar sesión */}
+        <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+          <FontAwesome name="tags" size={40} color="#789C3B" />
+          <Text style={styles.cardText}>Marcas</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+          <FontAwesome name="folder-open" size={40} color="#789C3B" />
+          <Text style={styles.cardText}>Categorías</Text>
+        </TouchableOpacity>
+      </Animated.View>
+
+      {/* Botón cerrar sesión */}
       <TouchableOpacity 
         style={[styles.button, styles.logoutButton]} 
         onPress={handleLogout}
       >
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
+
+      {/* Botón ver perfil */}
+      <TouchableOpacity 
+        style={[styles.button, styles.profileButton]} 
+        onPress={() => navigation.navigate('Profile')}
+      >
+        <Text style={styles.profileText}>Ver perfil</Text>
+      </TouchableOpacity>
+
+      {toastVisible && (
+        <Animated.View
+          style={[
+            styles.toast,
+            {
+              opacity: toastAnim,
+              transform: [{
+                translateY: toastAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [50, 0],
+                }),
+              }],
+            },
+          ]}
+        >
+          <Text style={styles.toastText}>{toastMessage}</Text>
+        </Animated.View>
+      )}
     </View>
   );
 }
 
-// 🎨 Estilos de la pantalla Home
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center', // centra contenido verticalmente
-    alignItems: 'center',     // centra contenido horizontalmente
-    padding: 20,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
     backgroundColor: '#789C3B',
+    paddingTop: 60,
   },
   logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 20,
+    width: 100,
+    height: 100,
+    marginBottom: 15,
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#2e7d32',
+    color: '#fff',
     marginBottom: 5,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 30,
+    fontSize: 15,
+    color: '#f0f0f0',
+    marginBottom: 25,
     textAlign: 'center',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 15,
+    width: '90%',
+  },
+  card: {
+    backgroundColor: '#fff',
+    width: '42%',
+    aspectRatio: 1,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 8,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 4,
+  },
+  cardText: {
+    color: '#2e7d32',
+    fontWeight: 'bold',
+    marginTop: 10,
+    fontSize: 16,
   },
   button: {
     backgroundColor: '#fff',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
     borderRadius: 10,
-    width: '80%',
+    elevation: 3,
+    width: '70%',
     alignItems: 'center',
-    marginBottom: 15,
-  },
-  buttonText: {
-    color: '#789C3B',
-    fontSize: 16,
-    fontWeight: 'bold',
+    marginTop: 15,
   },
   logoutButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#789C3B',
+    borderColor: '#2e7d32',
+    borderWidth: 1.5,
+    marginTop: 40,
   },
   logoutText: {
-    color: '#789C3B',
-    fontSize: 16,
+    color: '#2e7d32',
     fontWeight: 'bold',
+    fontSize: 16,
+  },
+  profileButton: {
+    borderColor: '#2e7d32',
+    borderWidth: 1.5,
+    backgroundColor: '#2e7d32',
+  },
+  profileText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  toast: {
+    position: 'absolute',
+    bottom: 40,
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  toastText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
   },
 });

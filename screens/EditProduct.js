@@ -45,19 +45,19 @@ export default function EditProduct({ route, navigation }) {
                 imageUrl,
             });
 
-            // ✅ Aviso de éxito
-            Alert.alert("✅ Producto actualizado", `${name} se modificó con éxito`);
+            // Aviso de éxito
+            Alert.alert("Producto actualizado", `${name} se modificó con éxito`);
 
             // Volvemos a la pantalla anterior
             navigation.goBack();
         } catch (error) {
             // Manejo de errores
-            console.log("❌ Error al actualizar producto:", error);
+            console.log("Error al actualizar producto:", error);
             Alert.alert("Error", "No se pudo actualizar el producto.");
         }
     };
 
-    // 🖼️ Interfaz de usuario
+    // Interfaz de usuario
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Editar Producto</Text>
@@ -104,15 +104,21 @@ export default function EditProduct({ route, navigation }) {
                 onChangeText={setImageUrl} 
             />
 
-            {/* Botón para guardar cambios */}
+            {/* Botón guardar y cancelar */}
             <TouchableOpacity style={styles.button} onPress={handleUpdate}>
                 <Text style={styles.buttonText}>Guardar Cambios</Text>
             </TouchableOpacity>
+            <TouchableOpacity 
+                style={[styles.button, styles.cancelButton]} 
+                onPress={() => navigation.goBack()}
+                >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </TouchableOpacity>            
         </View>
     );
 }
 
-// 🎨 Estilos de la pantalla
+// Estilos de la pantalla
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -144,4 +150,13 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
     },
+        cancelButton:{
+        backgroundColor:'#ffff',
+        borderWidth: 2,
+        borderColor:'#789C3B'
+    },
+    cancelButtonText:{
+        color:'#789C3B',
+        fontWeight:'bold'
+    }
 });

@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
   TextInput, 
   TouchableOpacity, 
   StyleSheet, 
-  Alert, 
   Image, 
   KeyboardAvoidingView, 
   ScrollView, 
-  Platform 
+  Platform, 
+  Animated,
+  ImageBackground
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -31,13 +32,14 @@ export default function Login({ navigation }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Configuración de Google Sign-In con credenciales de Firebase
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com", 
-    iosClientId: "TU_IOS_CLIENT_ID.apps.googleusercontent.com", 
     expoClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",   
     webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",    
   });
 
+  // 🟢 Manejo de respuesta de Google Sign-In
   useEffect(() => {
     if (response?.type === "success") {
       const { authentication } = response;
@@ -45,29 +47,37 @@ export default function Login({ navigation }) {
         const credential = GoogleAuthProvider.credential(authentication.idToken);
         signInWithCredential(auth, credential)
           .then(() => {
-            Alert.alert("Bienvenido", "Has iniciado sesión con Google");
+            Alert.alert("✅ Bienvenido", "Has iniciado sesión con Google");
             navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
           })
           .catch((error) => {
-            console.log("Error credencial Google:", error);
+            console.log("❌ Error credencial Google:", error);
             Alert.alert("Error", "No se pudo iniciar sesión con Google.");
           });
       }
     }
   }, [response]);
 
+  // 📩 Login con email y password
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Por favor ingrese ambos campos.");
+      showError("Por favor ingrese ambos campos.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showError("El formato del correo electrónico no es válido.");
       return;
     }
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      Alert.alert("Login exitoso", "Has iniciado sesión correctamente.");
       navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
     } catch (error) {
-      console.log("Error Firebase:", error);
+      console.log("❌ Error Firebase:", error);
+
+      // Manejo de errores más descriptivo
       let errorMessage = "Hubo un problema al iniciar sesión.";
       switch (error.code) {
         case 'auth/invalid-email':
@@ -77,33 +87,34 @@ export default function Login({ navigation }) {
           errorMessage = "La contraseña es incorrecta.";
           break;
         case 'auth/user-not-found':
-          errorMessage = "No se encontró un usuario con este correo.";
+          errorMessage = "No existe una cuenta asociada a este correo electrónico";
           break;
         case 'auth/network-request-failed':
           errorMessage = "Error de conexión, por favor intenta más tarde.";
           break;
       }
-      Alert.alert("Error", errorMessage);
+      showError(errorMessage);
     }
   };
 
+  // 🔄 Recuperar contraseña
   const handleForgotPassword = async () => {
     if (!email) {
-      Alert.alert("Error", "Por favor ingresa tu correo electrónico.");
+      showError("Por favor ingresa tu correo electrónico.");
       return;
     }
     try {
       await sendPasswordResetEmail(auth, email);
-      Alert.alert("Revisa tu correo", "Te enviamos un enlace para restablecer tu contraseña.");
+      Alert.alert("✅ Revisa tu correo", "Te enviamos un enlace para restablecer tu contraseña.");
     } catch (error) {
-      console.log("Error reset password:", error);
+      console.log("❌ Error reset password:", error);
       let errorMessage = "No se pudo enviar el email de recuperación.";
       if (error.code === "auth/user-not-found") {
         errorMessage = "No existe un usuario con ese correo.";
       } else if (error.code === "auth/invalid-email") {
         errorMessage = "El correo ingresado no es válido.";
       }
-      Alert.alert("Error", errorMessage);
+      showError(errorMessage);
     }
   };
 
@@ -112,27 +123,28 @@ export default function Login({ navigation }) {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView 
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.container}>
           
-          {/* Header con logo */}
+          {/* Encabezado con logo */}
+          
           <View style={styles.header}>
-            <Image source={require('../assets/logo.png')} style={styles.logo} />
+            <Text style={styles.headerText}>Sana-mente Natural</Text>
+            <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
           </View>
 
-          {/* Formulario */}
+          {/* Formulario de login */}
           <View style={styles.form}>
             <Text style={styles.title}>Iniciar sesión</Text>
 
-            {/* Email */}
+            {/* Campo de Email */}
             <View style={styles.inputContainer}>
               <FontAwesome name="envelope" size={20} color="#777" style={styles.icon} />
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && { color: 'red' },
+                ]}
                 placeholder="Correo electrónico"
                 value={email}
                 onChangeText={setEmail}
@@ -141,7 +153,7 @@ export default function Login({ navigation }) {
               />
             </View>
 
-            {/* Password */}
+            {/* Campo de Contraseña con toggle de visibilidad */}
             <View style={styles.inputContainer}>
               <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
               <TextInput
@@ -159,18 +171,19 @@ export default function Login({ navigation }) {
                 />
               </TouchableOpacity>
             </View>
+            
 
-            {/* Olvidaste contraseña */}
-            <TouchableOpacity onPress={handleForgotPassword} style={{ width: "100%" }}>
+            {/* Recuperar contraseña */}
+            <TouchableOpacity onPress={handleForgotPassword}>
               <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
 
-            {/* Botón Login */}
+            {/* Botón de login normal */}
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
               <Text style={styles.buttonText}>Ingresar</Text>
             </TouchableOpacity>
 
-            {/* Botón Google */}
+            {/* Botón de login con Google */}
             <TouchableOpacity 
               style={[styles.googleButton, { opacity: request ? 1 : 0.5 }]} 
               disabled={!request}
@@ -180,50 +193,57 @@ export default function Login({ navigation }) {
               <Text style={styles.googleText}>Ingresar con Google</Text>
             </TouchableOpacity>
 
-            {/* Crear cuenta */}
+            {/* Link para crear cuenta */}
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
               <Text style={styles.signUpText}>
                 ¿No tenés cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Registrate</Text>
               </Text>
             </TouchableOpacity>
-
-            {/* Slogan + Footer */}
-            <Text style={styles.slogan}>Porque comer bien es la base de sentirse mejor</Text>
-            <Text style={styles.footer}>© 2025 Sana-mente Natural</Text>
           </View>
         </View>
       </ScrollView>
+      </ImageBackground>
+      
+
+      {/* Toast flotante */}
+      {showToast && (
+        <Animated.View style={[styles.toast, { opacity: fadeAnim }]}>
+          <FontAwesome name="exclamation-circle" size={18} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.toastText}>{toastMessage}</Text>
+        </Animated.View>
+      )}
     </KeyboardAvoidingView>
+    
   );
 }
 
 // Estilos
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f6fa' },
+  container: { flex: 1 },
   header: {
-    backgroundColor: '#789C3B',
     width: '100%',
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 50,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
   logo: { width: 100, height: 100 },
   form: {
+    width: '100%',
     flex: 1,
     alignItems: 'center',
-    marginTop: -10,
+    marginTop: -30,
     backgroundColor: '#fff',
-    marginHorizontal: 20,
     borderRadius: 20,
-    padding: 25,
+    padding: 20,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 5,
+    alignSelf: 'stretch'
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 25 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 20 },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -232,7 +252,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     paddingHorizontal: 10,
-    marginBottom: 25,
+    marginBottom: 15,
     width: '100%',
     height: 50,
   },
@@ -241,8 +261,7 @@ const styles = StyleSheet.create({
   forgotPassword: {
     color: '#789C3B',
     fontSize: 14,
-    textAlign: "right", // pegado a la derecha
-    marginBottom: 25,
+    marginBottom: 20,
   },
   button: {
     backgroundColor: '#789C3B',
@@ -265,7 +284,5 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   googleText: { marginLeft: 10, fontSize: 16, color: '#333' },
-  signUpText: { fontSize: 14, color: '#555', marginBottom: 20 },
-  slogan: { fontSize: 14, color: '#777', textAlign: 'center', marginTop: 10 },
-  footer: { fontSize: 12, color: '#aaa', textAlign: 'center', marginTop: 5 },
+  signUpText: { fontSize: 14, color: '#555' },
 });

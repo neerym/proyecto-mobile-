@@ -7,27 +7,22 @@ import {
     StyleSheet, 
     Image, 
     Alert, 
-    ActivityIndicator
+    ActivityIndicator 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-
-// Firebase: manejo de perfil y autenticación
 import { auth } from '../src/config/firebaseConfig';
 import { signOut, updatePassword, updateProfile } from 'firebase/auth';
 
-// 👤 Pantalla de Perfil del usuario logueado
 export default function Profile({ navigation }) {
-    const user = auth.currentUser; // Usuario actual
+    const user = auth.currentUser;
 
-    // Estados para los campos del perfil
     const [name, setName] = useState(user?.displayName || '');
-    const [email] = useState(user?.email || ''); // email solo lectura
+    const [email] = useState(user?.email || '');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [avatar, setAvatar] = useState(user?.photoURL || '');
     const [loading, setLoading] = useState(false);
 
-    // ✏️ Guardar cambios de perfil
     const handleUpdateProfile = async () => {
         try {
             if (!name && !password && !avatar) {
@@ -37,7 +32,6 @@ export default function Profile({ navigation }) {
 
             setLoading(true);
 
-            // Actualizar nombre y avatar si cambian
             if (name || avatar) {
                 await updateProfile(user, {
                     displayName: name,
@@ -45,7 +39,6 @@ export default function Profile({ navigation }) {
                 });
             }
 
-            // Actualizar contraseña si el campo no está vacío
             if (password) {
                 if (password.length < 6) {
                     Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres.");
@@ -59,57 +52,55 @@ export default function Profile({ navigation }) {
             Alert.alert("Éxito", "Perfil actualizado correctamente");
         } catch (error) {
             setLoading(false);
-            console.log("❌ Error al actualizar perfil:", error);
+            console.log("Error al actualizar perfil:", error);
             Alert.alert("Error", "No se pudo actualizar el perfil");
         }
     };
 
-    // 🚪 Cerrar sesión
     const handleLogout = async () => {
         await signOut(auth);
         navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     };
 
-    // 🔄 Spinner mientras se aplican cambios
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#789C3B" />
-                <Text style={{ marginTop: 15, fontSize: 16, color: '#555' }}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={{ marginTop: 15, fontSize: 16, color: '#fff' }}>
                     Cargando perfil...
                 </Text>
             </View>
         );
     }
 
-    // 🖼️ Interfaz del perfil
     return (
         <View style={styles.container}>
-            {/* Avatar del usuario */}
+            {/*usuario */}
             <View style={styles.avatarContainer}>
                 {avatar ? (
                     <Image source={{ uri: avatar }} style={styles.avatar} />
                 ) : (
-                    <FontAwesome name="user-circle" size={100} color="#a78bfa" />
+                    <FontAwesome name="user-circle" size={100} color="#fff" />
                 )}
             </View>
 
-            {/* Nombre editable */}
+            {/* Nombre */}
             <TextInput
                 style={styles.input}
                 placeholder="Nombre"
                 value={name}
                 onChangeText={setName}
+                placeholderTextColor="#ddd"
             />
 
-            {/* Email solo lectura */}
+            {/* Email */}
             <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: '#e6e6e6', color: '#666' }]}
                 value={email}
                 editable={false}
             />
 
-            {/* Contraseña con toggle de visibilidad */}
+            {/* Contraseña */}
             <View style={styles.passwordContainer}>
                 <TextInput
                     style={[styles.input, { flex: 1 }]}
@@ -117,27 +108,37 @@ export default function Profile({ navigation }) {
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
+                    placeholderTextColor="#ddd"
                 />
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                     <FontAwesome 
                         name={showPassword ? "eye-slash" : "eye"} 
                         size={20} 
-                        color="#555" 
+                        color="#fff" 
                     />
                 </TouchableOpacity>
             </View>
 
-            {/* Campo para URL de avatar */}
+            {/* URL avatar */}
             <TextInput
                 style={styles.input}
                 placeholder="URL de tu foto de perfil"
                 value={avatar}
                 onChangeText={setAvatar}
+                placeholderTextColor="#ddd"
             />
 
             {/* Guardar cambios */}
-            <TouchableOpacity style={styles.editButton} onPress={handleUpdateProfile}>
-                <Text style={styles.editButtonText}>Guardar cambios</Text>
+            <TouchableOpacity style={styles.saveButton} onPress={handleUpdateProfile}>
+                <Text style={styles.saveButtonText}>Guardar cambios</Text>
+            </TouchableOpacity>
+
+            {/* Volver a Home */}
+            <TouchableOpacity 
+                style={styles.backButton}
+                onPress={() => navigation.navigate('Home')}
+            >
+                <Text style={styles.backButtonText}>Volver al inicio</Text>
             </TouchableOpacity>
 
             {/* Cerrar sesión */}
@@ -148,65 +149,84 @@ export default function Profile({ navigation }) {
     );
 }
 
-// 🎨 Estilos de la pantalla de perfil
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: '#f5f6fa',
+        padding: 25,
+        backgroundColor: '#789C3B',
         alignItems: 'center',
     },
     avatarContainer: {
-        marginBottom: 20,
+        marginBottom: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     avatar: {
         width: 100,
         height: 100,
         borderRadius: 50,
+        borderWidth: 2,
+        borderColor: '#fff',
     },
     input: {
-        backgroundColor: '#fff',
+        backgroundColor: '#90B25D',
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 10,
         padding: 10,
         marginBottom: 15,
         width: '100%',
+        color: '#fff',
     },
     passwordContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
-        marginBottom: 20,
+        marginBottom: 15,
     },
-    editButton: {
-        backgroundColor: '#789C3B',
-        padding: 15,
+    saveButton: {
+        backgroundColor: '#fff',
+        paddingVertical: 15,
         borderRadius: 10,
         width: '100%',
         alignItems: 'center',
-        marginBottom: 15,
+        marginBottom: 10,
     },
-    editButtonText: {
+    saveButtonText: {
+        color: '#2e7d32',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    backButton: {
+        backgroundColor: '#2e7d32',
+        paddingVertical: 15,
+        borderRadius: 10,
+        width: '100%',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    backButtonText: {
         color: '#fff',
         fontWeight: 'bold',
+        fontSize: 16,
     },
     logoutButton: {
-        borderColor: '#789C3B',
-        borderWidth: 1,
-        padding: 15,
+        borderColor: '#fff',
+        borderWidth: 1.5,
+        paddingVertical: 15,
         borderRadius: 10,
         width: '100%',
         alignItems: 'center',
     },
     logoutButtonText: {
-        color: '#789C3B',
+        color: '#fff',
         fontWeight: 'bold',
+        fontSize: 16,
     },
     loadingContainer: { 
         flex: 1, 
         justifyContent: 'center', 
         alignItems: 'center', 
-        backgroundColor: '#f5f6fa'
+        backgroundColor: '#789C3B'
     },
 });
