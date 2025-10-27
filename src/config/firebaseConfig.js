@@ -6,6 +6,8 @@ import {
 } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFirestore } from 'firebase/firestore';
+// 👇 mantenemos esto por si más adelante activás Blaze
+import { getStorage } from "firebase/storage";
 
 // 🔑 Configuración del proyecto Firebase
 const firebaseConfig = {
@@ -20,7 +22,7 @@ const firebaseConfig = {
 // Evita inicializar Firebase más de una vez
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// ✅ Inicializa Auth de forma segura (para Expo + RN)
+//  Inicializa Auth de forma segura (para Expo + RN)
 let auth;
 try {
   if (typeof initializeAuth === "function" && getReactNativePersistence) {
@@ -37,7 +39,9 @@ try {
   auth = getAuth(app);
 }
 
-// 📦 Inicializa Firestore
+//  Inicializa Firestore y Storage (aunque no lo uses aún)
 const db = getFirestore(app);
+const storage = getStorage(app); 
 
-export { auth, db };
+//  Exportación única y limpia
+export { auth, db, storage };

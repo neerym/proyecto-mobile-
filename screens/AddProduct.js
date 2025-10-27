@@ -1,161 +1,242 @@
 import React, { useState } from 'react';
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
-    StyleSheet, 
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
     Alert,
-    Image
-} from 'react-native';
+    Image,
+    ImageBackground,
+    ActivityIndicator,
+    } from 'react-native';
+    import { FontAwesome } from '@expo/vector-icons';
+    import * as ImagePicker from 'expo-image-picker';
+    import { collection, addDoc } from 'firebase/firestore';
+    import { db } from '../src/config/firebaseConfig';
 
-// Importamos funciones de Firebase para trabajar con Firestore
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "../src/config/firebaseConfig";
-import defaultImage from '../assets/default.png'; 
-
-//  Componente principal para agregar productos
-export default function AddProduct({ navigation }) {
-    // Estados locales para los campos del formulario
+    export default function AddProduct({ navigation }) {
     const [name, setName] = useState('');
     const [quantity, setQuantity] = useState('');
     const [price, setPrice] = useState('');
     const [description, setDescription] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
-    // 🔑 Función que guarda un nuevo producto en Firestore
-    const handleAdd = async () => {
-        // Validación: algunos campos son obligatorios
-        if (!name || !quantity || !price) {
-            Alert.alert("Error", "Nombre, cantidad y precio son obligatorios");
+    const [image, setImage] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    // 📸 Elegir o sacar foto
+    const pickImage = async (fromCamera = false) => {
+        try {
+        const permission = await ImagePicker.requestCameraPermissionsAsync();
+        if (!permission.granted) {
+            Alert.alert('Permiso requerido', 'Se necesita acceso a la cámara o galería.');
             return;
         }
 
-        try {
-            // Guardamos en la colección "productos"
-            await addDoc(collection(db, "productos"), {
-                name,
-                quantity: parseInt(quantity),   // convierte cantidad a número entero
-                price: parseFloat(price),       // convierte precio a decimal
-                description,
-                imageUrl: imageUrl ? imageUrl : Image.resolveAssetSource(defaultImage).uri,
-                createdAt: new Date(),          // fecha de creación
-            });
+        const result = fromCamera
+            ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 })
+            : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 });
 
-            //  Mensaje de éxito
-            Alert.alert("Producto agregado", `${name} se guardó con éxito`);
-
-            // ⏳ Regresa a la pantalla anterior después de 1 segundo
-            setTimeout(() => navigation.goBack(), 1000);
+        if (!result.canceled) {
+            setImage(result.assets[0].uri);
+        }
         } catch (error) {
-            // Manejo de errores
-            console.log("Error al agregar producto:", error);
-            Alert.alert("Error", "No se pudo guardar el producto.");
+        console.log('Error al seleccionar imagen:', error);
+        Alert.alert('Error', 'No se pudo seleccionar la imagen.');
         }
     };
 
-    //  Renderizado de la interfaz de usuario
+    // 💾 Guardar producto (sin subir a Storage)
+    const handleAdd = async () => {
+        if (!name || !quantity || !price) {
+        Alert.alert('Error', 'Nombre, cantidad y precio son obligatorios');
+        return;
+        }
+
+        try {
+        setLoading(true);
+
+        await addDoc(collection(db, 'productos'), {
+            name,
+            quantity: parseInt(quantity),
+            price: parseFloat(price),
+            description,
+            imageUrl: image || null, // Guarda el URI local
+            createdAt: new Date(),
+        });
+
+        Alert.alert('✅ Producto agregado', `${name} se guardó con éxito`);
+        navigation.goBack();
+        } catch (error) {
+        console.log('Error al agregar producto:', error);
+        Alert.alert('Error', 'No se pudo guardar el producto.');
+        } finally {
+        setLoading(false);
+        }
+    };
+
     return (
-        <View style={styles.container}>
+        <ImageBackground source={require('../assets/fondoPistacho.jpg')} style={styles.background}>
+        <View style={styles.overlay}>
             <Text style={styles.title}>Agregar Producto</Text>
 
-            {/* Campo para Nombre */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="Nombre" 
-                value={name} 
-                onChangeText={setName} 
-            />
+            {loading ? (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={styles.loadingText}>Guardando producto...</Text>
+            </View>
+            ) : (
+            <>
+                {/* Imagen seleccionada */}
+                <View style={styles.imageContainer}>
+                {image ? (
+                    <Image source={{ uri: image }} style={styles.imagePreview} />
+                ) : (
+                    <FontAwesome name="image" size={100} color="#fff" />
+                )}
 
-            {/* Campo para Descripción */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="Descripción" 
-                value={description} 
-                onChangeText={setDescription} 
-            />
+                <View style={styles.photoButtons}>
+                    <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(false)}>
+                    <FontAwesome name="image" size={20} color="#fff" />
+                    <Text style={styles.iconText}>Galería</Text>
+                    </TouchableOpacity>
 
-            {/* Campo para Cantidad */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="Stock" 
-                value={quantity} 
-                onChangeText={setQuantity} 
+                    <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(true)}>
+                    <FontAwesome name="camera" size={20} color="#fff" />
+                    <Text style={styles.iconText}>Cámara</Text>
+                    </TouchableOpacity>
+                </View>
+                </View>
+
+                {/* Campos */}
+                <Text style={styles.label}>Nombre del producto</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Ej: Yerba orgánica"
+                value={name}
+                onChangeText={setName}
+                placeholderTextColor="#ddd"
+                />
+
+                <Text style={styles.label}>Descripción</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Breve descripción (opcional)"
+                value={description}
+                onChangeText={setDescription}
+                placeholderTextColor="#ddd"
+                />
+
+                <Text style={styles.label}>Cantidad en stock</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Ej: 10"
+                value={quantity}
+                onChangeText={setQuantity}
                 keyboardType="numeric"
-            />
+                placeholderTextColor="#ddd"
+                />
 
-            {/* Campo para Precio */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="Precio" 
-                value={price} 
-                onChangeText={setPrice} 
+                <Text style={styles.label}>Precio unitario</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Ej: 1500"
+                value={price}
+                onChangeText={setPrice}
                 keyboardType="numeric"
-            />
+                placeholderTextColor="#ddd"
+                />
 
+                {/* Botones */}
+                <TouchableOpacity style={styles.saveButton} onPress={handleAdd}>
+                <Text style={styles.saveButtonText}>Guardar</Text>
+                </TouchableOpacity>
 
-
-            {/* Campo opcional para URL de imagen */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="URL de la imagen (opcional)" 
-                value={imageUrl} 
-                onChangeText={setImageUrl} 
-            />
-
-            {/* Botón agregar y cancelar*/}
-            <TouchableOpacity style={styles.button} onPress={handleAdd}>
-                <Text style={styles.buttonText}>Guardar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-                style={[styles.button, styles.cancelButton]} 
-                onPress={() => navigation.goBack()}
-                >
+                <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
                 <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
+                </TouchableOpacity>
+            </>
+            )}
         </View>
+        </ImageBackground>
     );
-}
+    }
 
-//Estiloss de la pantalla
-const styles = StyleSheet.create({
-    container: {
-        paddingTop: 50,
+    const styles = StyleSheet.create({
+    background: {
         flex: 1,
-        padding: 20,
-        backgroundColor: '#f5f6fa',
+        resizeMode: 'cover',
+        width: '100%',
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(29, 53, 19, 0.65)',
+        padding: 25,
     },
     title: {
-        fontSize: 35,
+        fontSize: 30,
         fontWeight: 'bold',
+        color: '#fff',
+        textAlign: 'center',
         marginBottom: 20,
-        color: 'rgba(16, 57, 0, 1)',
+    },
+    label: {
+        color: '#fff',
+        marginBottom: 5,
+        fontWeight: '600',
     },
     input: {
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: 'rgba(16, 57, 0, 1)',
+        backgroundColor: 'rgba(255,255,255,0.15)',
         borderRadius: 10,
-        padding: 15,
+        padding: 12,
+        marginBottom: 15,
+        color: '#fff',
+    },
+    imageContainer: {
+        alignItems: 'center',
         marginBottom: 15,
     },
-    button: {
-        backgroundColor: '#789C3B',
-        padding: 15,
+    imagePreview: {
+        width: 120,
+        height: 120,
+        borderRadius: 10,
+        borderWidth: 2,
+        borderColor: '#fff',
+    },
+    photoButtons: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 10,
+        gap: 15,
+    },
+    iconButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 10,
+    },
+    iconText: { color: '#fff', marginLeft: 5 },
+    saveButton: {
+        backgroundColor: '#fff',
+        paddingVertical: 15,
         borderRadius: 10,
         alignItems: 'center',
-        marginTop: 10,
+        marginBottom: 10,
     },
-    buttonText: {
-        color: '#fff',
-        fontWeight: 'bold',
+    saveButtonText: { color: '#2e7d32', fontWeight: 'bold', fontSize: 16 },
+    cancelButton: {
+        borderColor: '#fff',
+        borderWidth: 1.5,
+        paddingVertical: 15,
+        borderRadius: 10,
+        alignItems: 'center',
     },
-    cancelButton:{
-        backgroundColor:'#ffff',
-        borderWidth: 2,
-        borderColor:'#789C3B'
+    cancelButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    loadingContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    cancelButtonText:{
-        color:'#789C3B',
-        fontWeight:'bold'
-    }
+    loadingText: { color: '#fff', marginTop: 10 },
 });

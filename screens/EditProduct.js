@@ -1,162 +1,285 @@
-import React, { useState } from 'react';
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
-    StyleSheet, 
-    Alert 
-} from 'react-native';
+import React, { useState } from "react";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    Image,
+    Alert,
+    ImageBackground,
+    ActivityIndicator,
+    } from "react-native";
+    import { FontAwesome } from "@expo/vector-icons";
+    import * as ImagePicker from "expo-image-picker";
+    import { doc, updateDoc } from "firebase/firestore";
+    import { db } from "../src/config/firebaseConfig";
 
-// Importamos métodos para actualizar documentos en Firestore
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../src/config/firebaseConfig";
-
-// 🛠️ Componente para editar un producto existente
-export default function EditProduct({ route, navigation }) {
-    // Recibimos el producto desde la pantalla anterior
+    export default function EditProduct({ route, navigation }) {
     const { product } = route.params;
 
-    // Estados iniciales con los valores actuales del producto
-    const [name, setName] = useState(product.name || '');
-    const [quantity, setQuantity] = useState(product.quantity?.toString() || '');
-    const [price, setPrice] = useState(product.price?.toString() || '');
-    const [description, setDescription] = useState(product.description || '');
-    const [imageUrl, setImageUrl] = useState(product.imageUrl || '');
+    const [name, setName] = useState(product.name || "");
+    const [quantity, setQuantity] = useState(product.quantity?.toString() || "");
+    const [price, setPrice] = useState(product.price?.toString() || "");
+    const [description, setDescription] = useState(product.description || "");
+    const [imageUrl, setImageUrl] = useState(product.imageUrl || "");
+    const [loading, setLoading] = useState(false);
 
-    // 🔑 Función para actualizar el producto en Firestore
-    const handleUpdate = async () => {
-        // Validación: todos los campos son obligatorios
-        if (!name || !quantity || !price || !imageUrl) {
-            Alert.alert("Error", "Todos los campos son obligatorios");
+    //  Seleccionar imagen desde cámara o galería
+    const pickImage = async (fromCamera = false) => {
+        try {
+        const permission = await ImagePicker.requestCameraPermissionsAsync();
+        if (!permission.granted) {
+            Alert.alert("Permiso requerido", "Se necesita acceso a la cámara o galería.");
             return;
         }
 
-        try {
-            // Obtenemos referencia al documento en Firestore
-            const productRef = doc(db, "productos", product.id);
-
-            // Actualizamos con los nuevos valores
-            await updateDoc(productRef, {
-                name,
-                quantity: parseInt(quantity),   // convertir cantidad a entero
-                price: parseFloat(price),       // convertir precio a decimal
-                description,
-                imageUrl,
+        const result = fromCamera
+            ? await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.7,
+            })
+            : await ImagePicker.launchImageLibraryAsync({
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.7,
             });
 
-            // Aviso de éxito
-            Alert.alert("Producto actualizado", `${name} se modificó con éxito`);
-
-            // Volvemos a la pantalla anterior
-            navigation.goBack();
+        if (!result.canceled) {
+            setImageUrl(result.assets[0].uri);
+        }
         } catch (error) {
-            // Manejo de errores
-            console.log("Error al actualizar producto:", error);
-            Alert.alert("Error", "No se pudo actualizar el producto.");
+        console.log("Error al seleccionar imagen:", error);
+        Alert.alert("Error", "No se pudo seleccionar la imagen.");
         }
     };
 
-    // Interfaz de usuario
+    //  Actualizar producto (sin subir imagen a Storage)
+    const handleUpdate = async () => {
+        if (!name || !quantity || !price) {
+        Alert.alert("Error", "Nombre, cantidad y precio son obligatorios.");
+        return;
+        }
+
+        try {
+        setLoading(true);
+        const productRef = doc(db, "productos", product.id);
+
+        await updateDoc(productRef, {
+            name,
+            quantity: parseInt(quantity),
+            price: parseFloat(price),
+            description,
+            imageUrl, // Guarda la URI local
+        });
+
+        setLoading(false);
+        Alert.alert("✅ Éxito", "Producto actualizado correctamente.");
+        navigation.goBack();
+        } catch (error) {
+        console.log("Error al actualizar producto:", error);
+        setLoading(false);
+        Alert.alert("Error", "No se pudo actualizar el producto.");
+        }
+    };
+
     return (
-        <View style={styles.container}>
+        <ImageBackground
+        source={require("../assets/fondoPistacho.jpg")}
+        style={styles.backgroundImage}
+        >
+        <View style={styles.overlay}>
             <Text style={styles.title}>Editar Producto</Text>
 
-            {/* Campo para Nombre */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="Nombre" 
-                value={name} 
-                onChangeText={setName} 
-            />
+            {/* Imagen del producto */}
+            <View style={styles.avatarContainer}>
+            {imageUrl ? (
+                <Image source={{ uri: imageUrl }} style={styles.avatar} />
+            ) : (
+                <View style={styles.placeholder}>
+                <FontAwesome name="image" size={40} color="#fff" />
+                </View>
+            )}
 
-            {/* Campo para Cantidad */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="Cantidad" 
-                value={quantity} 
-                onChangeText={setQuantity} 
-                keyboardType="numeric"
-            />
-
-            {/* Campo para Precio */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="Precio" 
-                value={price} 
-                onChangeText={setPrice} 
-                keyboardType="numeric"
-            />
-
-            {/* Campo para Descripción */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="Descripción" 
-                value={description} 
-                onChangeText={setDescription} 
-            />
-
-            {/* Campo para URL de la imagen */}
-            <TextInput 
-                style={styles.input} 
-                placeholder="URL de la imagen" 
-                value={imageUrl} 
-                onChangeText={setImageUrl} 
-            />
-
-            {/* Botón guardar y cancelar */}
-            <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-                <Text style={styles.buttonText}>Guardar Cambios</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-                style={[styles.button, styles.cancelButton]} 
-                onPress={() => navigation.goBack()}
+            <View style={styles.photoButtons}>
+                <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => pickImage(false)}
                 >
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>            
-        </View>
-    );
-}
+                <FontAwesome name="image" size={18} color="#fff" />
+                <Text style={styles.iconText}>Galería</Text>
+                </TouchableOpacity>
 
-// Estilos de la pantalla
-const styles = StyleSheet.create({
-    container: {
+                <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => pickImage(true)}
+                >
+                <FontAwesome name="camera" size={18} color="#fff" />
+                <Text style={styles.iconText}>Cámara</Text>
+                </TouchableOpacity>
+            </View>
+            </View>
+
+            {/* Campos */}
+            <Text style={styles.label}>Nombre del producto</Text>
+            <TextInput
+            style={styles.input}
+            placeholder="Nombre"
+            value={name}
+            onChangeText={setName}
+            placeholderTextColor="#ddd"
+            />
+
+            <Text style={styles.label}>Cantidad en stock</Text>
+            <TextInput
+            style={styles.input}
+            placeholder="Stock"
+            value={quantity}
+            onChangeText={setQuantity}
+            keyboardType="numeric"
+            placeholderTextColor="#ddd"
+            />
+
+            <Text style={styles.label}>Precio unitario</Text>
+            <TextInput
+            style={styles.input}
+            placeholder="Precio"
+            value={price}
+            onChangeText={setPrice}
+            keyboardType="numeric"
+            placeholderTextColor="#ddd"
+            />
+
+            <Text style={styles.label}>Descripción</Text>
+            <TextInput
+            style={styles.input}
+            placeholder="Descripción (opcional)"
+            value={description}
+            onChangeText={setDescription}
+            placeholderTextColor="#ddd"
+            />
+
+            {/* Botones */}
+            <TouchableOpacity style={styles.saveButton} onPress={handleUpdate}>
+            <Text style={styles.saveButtonText}>Guardar cambios</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => navigation.goBack()}
+            >
+            <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+
+            {loading && (
+            <ActivityIndicator size="large" color="#fff" style={{ marginTop: 15 }} />
+            )}
+        </View>
+        </ImageBackground>
+    );
+    }
+
+    //  Estilos
+    const styles = StyleSheet.create({
+    backgroundImage: {
         flex: 1,
-        padding: 20,
-        backgroundColor: '#f5f6fa',
+        resizeMode: "cover",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+    },
+    overlay: {
+        flex: 1,
+        width: "100%",
+        padding: 25,
+        backgroundColor: "rgba(29, 53, 19, 0.7)",
     },
     title: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 28,
+        fontWeight: "bold",
+        color: "#fff",
+        textAlign: "center",
         marginBottom: 20,
-        color: '#2e7d32',
     },
-    input: {
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 10,
-        padding: 10,
+    avatarContainer: {
+        alignItems: "center",
         marginBottom: 15,
     },
-    button: {
-        backgroundColor: '#789C3B',
-        padding: 15,
+    avatar: {
+        width: 120,
+        height: 120,
         borderRadius: 10,
-        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: "#fff",
+    },
+    placeholder: {
+        width: 120,
+        height: 120,
+        borderRadius: 10,
+        borderWidth: 2,
+        borderColor: "#fff",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    photoButtons: {
+        flexDirection: "row",
+        justifyContent: "center",
+        marginTop: 10,
+        gap: 15,
+    },
+    iconButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "rgba(255,255,255,0.2)",
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 10,
+    },
+    iconText: {
+        color: "#fff",
+        marginLeft: 5,
+    },
+    label: {
+        color: "#fff",
+        fontWeight: "bold",
+        marginBottom: 5,
+        marginTop: 10,
+        alignSelf: "flex-start",
+    },
+    input: {
+        backgroundColor: "rgba(255,255,255,0.15)",
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 10,
+        color: "#fff",
+        fontSize: 15,
+    },
+    saveButton: {
+        backgroundColor: "#fff",
+        paddingVertical: 15,
+        borderRadius: 10,
+        width: "100%",
+        alignItems: "center",
         marginTop: 10,
     },
-    buttonText: {
-        color: '#fff',
-        fontWeight: 'bold',
+    saveButtonText: {
+        color: "#2e7d32",
+        fontWeight: "bold",
+        fontSize: 16,
     },
-        cancelButton:{
-        backgroundColor:'#ffff',
-        borderWidth: 2,
-        borderColor:'#789C3B'
+    cancelButton: {
+        borderColor: "#fff",
+        borderWidth: 1.5,
+        paddingVertical: 15,
+        borderRadius: 10,
+        width: "100%",
+        alignItems: "center",
+        marginTop: 10,
     },
-    cancelButtonText:{
-        color:'#789C3B',
-        fontWeight:'bold'
-    }
+    cancelButtonText: {
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: 16,
+    },
 });
