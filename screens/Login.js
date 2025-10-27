@@ -40,10 +40,11 @@ export default function Login({ navigation }) {
 
   // Configuración para login con Google
   const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com", 
-    expoClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",   
-    webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",    
-  });
+  androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com",
+  expoClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
+  webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
+});
+
 
   // Login con Google..Queda chequearlo despuess
   useEffect(() => {
@@ -220,15 +221,19 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
             </TouchableOpacity>
 
 
-            {/* Botón de login con Google (desactivado) */}
-              <TouchableOpacity 
-                style={styles.googleButtonDisabled}
-                onPress={() => showError("Próximamente: inicio con Google")}
-                activeOpacity={0.7}
-              >
-                <FontAwesome name="google" size={20} color="#999" />
-                <Text style={styles.googleTextDisabled}>Ingresar con Google</Text>
-              </TouchableOpacity>
+            {/* Botón de login con Google */}
+            <TouchableOpacity
+              style={styles.googleButton}
+              disabled={!request}
+              onPress={() => {
+                promptAsync();
+              }}
+              activeOpacity={0.8}
+            >
+              <FontAwesome name="google" size={20} color="#DB4437" />
+              <Text style={styles.googleText}>Ingresar con Google</Text>
+            </TouchableOpacity>
+
 
             {/* Enlace para crear cuenta */}
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
