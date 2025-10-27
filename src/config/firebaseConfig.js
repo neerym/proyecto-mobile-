@@ -17,25 +17,27 @@ const firebaseConfig = {
   appId: "1:966224331213:web:bf04f6fb11bbb90d9a0484"
 };
 
-// 🚀 Evita inicializar Firebase más de una vez
+// Evita inicializar Firebase más de una vez
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
+// ✅ Inicializa Auth de forma segura (para Expo + RN)
 let auth;
-
 try {
-  // 🔐 Inicializa Auth con persistencia usando AsyncStorage
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
-  });
-  console.log("✅ Auth inicializado con persistencia");
+  if (typeof initializeAuth === "function" && getReactNativePersistence) {
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+    console.log("✅ Auth inicializado con persistencia en AsyncStorage");
+  } else {
+    auth = getAuth(app);
+    console.warn("⚠️ initializeAuth no está disponible, usando getAuth()");
+  }
 } catch (err) {
-  // ⚠️ Fallback: si falla AsyncStorage, usa getAuth (sin persistencia)
-  console.warn("⚠️ No se pudo usar AsyncStorage, usando getAuth():", err.message);
+  console.warn("⚠️ Error inicializando Auth:", err.message);
   auth = getAuth(app);
 }
 
-// 📦 Inicializa Firestore (base de datos)
+// 📦 Inicializa Firestore
 const db = getFirestore(app);
 
-// Exporta para usar en el resto de la app
 export { auth, db };

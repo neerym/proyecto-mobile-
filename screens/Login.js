@@ -1,31 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Image, 
-  KeyboardAvoidingView, 
-  ScrollView, 
-  Platform, 
-  Animated,
-  ImageBackground
-} from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet, Image,
+  KeyboardAvoidingView, ScrollView, Platform, Animated, ImageBackground
+} from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
 
-import { 
-  signInWithEmailAndPassword, 
-  sendPasswordResetEmail, 
-  GoogleAuthProvider, 
-  signInWithCredential 
-} from 'firebase/auth';
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithCredential,
+} from "firebase/auth";
 
-import * as WebBrowser from "expo-web-browser";
+import * as WebBrowser from "expo-web-browser";          
+import * as AuthSession from "expo-auth-session";         
 import * as Google from "expo-auth-session/providers/google";
-import { auth } from '../src/config/firebaseConfig';
+import { auth } from "../src/config/firebaseConfig";
 
-WebBrowser.maybeCompleteAuthSession();
+WebBrowser.maybeCompleteAuthSession();    
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
@@ -39,12 +31,35 @@ export default function Login({ navigation }) {
   const [showToast, setShowToast] = useState(false);
 
   // Configuración para login con Google
-  const [request, response, promptAsync] = Google.useAuthRequest({
-  androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com",
-  expoClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
-  webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
-});
+  const redirectUri = AuthSession.makeRedirectUri({
+    useProxy: true,
+  });
 
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId:
+      "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
+    androidClientId:
+      "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com",
+    webClientId:
+      "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
+    responseType: "id_token",
+    scopes: ["profile", "email"],
+    redirectUri, // 👈 clave
+  });
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { authentication } = response;
+      if (authentication?.idToken) {
+        const credential = GoogleAuthProvider.credential(authentication.idToken);
+        signInWithCredential(auth, credential)
+          .then(() =>
+            navigation.reset({ index: 0, routes: [{ name: "Loading" }] })
+          )
+          .catch(() => showError("No se pudo iniciar sesión con Google."));
+      }
+    }
+  }, [response]);
 
   // Login con Google..Queda chequearlo despuess
   useEffect(() => {
