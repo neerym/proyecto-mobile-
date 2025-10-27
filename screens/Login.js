@@ -31,6 +31,7 @@ export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loadingReset, setLoadingReset] = useState(false);
 
   // Control del toast
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -77,60 +78,56 @@ export default function Login({ navigation }) {
   };
 
   // Login normal con email y contraseña
-  const handleLogin = async () => {
-    if (!email || !password) {
-      showError("Por favor ingrese ambos campos.");
-      return;
+ const handleLogin = async () => {
+  // Presencia con trim
+  if (!emailTrim || !passwordTrim) {
+    showError("Por favor ingrese ambos campos.");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailTrim)) {
+    showError("Por favor, ingrese un correo válido.");
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, emailTrim, passwordTrim);
+    navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
+  } catch (error) {
+    // evita enumeración de usuarios
+    let errorMessage = "Credenciales inválidas. Por favor, verifique su correo y contraseña.";
+
+    // Excepciones permitidas
+    if (error.code === 'auth/network-request-failed') {
+      errorMessage = "Error de conexión, por favor intenta más tarde.";
+    } else if (error.code === 'auth/too-many-requests') {
+      errorMessage = "Demasiados intentos. Por favor, intenta más tarde.";
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      showError("El formato del correo electrónico no es válido.");
-      return;
-    }
+    showError(errorMessage);
+  }
+};
 
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
-    } catch (error) {
-      let errorMessage = "Credenciales inválidas"; //modificacion mensaje error
-      switch (error.code) {
-        case 'auth/invalid-email':
-          errorMessage = "El formato del correo electrónico no es válido.";
-          break;
-        case 'auth/wrong-password':
-          errorMessage = "La contraseña es incorrecta.";
-          break;
-        case 'auth/user-not-found':
-          errorMessage = "No existe una cuenta asociada a este correo electrónico";
-          break;
-        case 'auth/network-request-failed':
-          errorMessage = "Error de conexión, por favor intenta más tarde.";
-          break;
+    // Envío de correo para restablecer contraseña
+    const handleForgotPassword = async () => {
+      if (!email) {
+        showError("Por favor ingresa tu correo electrónico.");
+        return;
       }
-      showError(errorMessage);
+        try {
+        await sendPasswordResetEmail(auth, email);
+        } catch (error) {
     }
+  
+
+// Mostrar siempre el mismo mensaje
+showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contraseña. Revisá tu correo o la carpeta de spam.");
   };
 
-  // Envío de correo para restablecer contraseña
-  const handleForgotPassword = async () => {
-    if (!email) {
-      showError("Por favor ingresa tu correo electrónico.");
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      showError("Te enviamos un enlace por email para restablecer tu contraseña.");
-    } catch (error) {
-      let errorMessage = "No se pudo enviar el email de recuperación.";
-      if (error.code === "auth/user-not-found") {
-        errorMessage = "No existe un usuario con ese correo.";
-      } else if (error.code === "auth/invalid-email") {
-        errorMessage = "El correo ingresado no es válido.";
-      }
-      showError(errorMessage);
-    }
-  };
+  const emailTrim = email.trim();
+  const passwordTrim = password.trim();
+  const canSubmit = emailTrim.length > 0 && passwordTrim.length > 0;
 
   return (
     <KeyboardAvoidingView 
@@ -197,14 +194,31 @@ export default function Login({ navigation }) {
             
 
             {/* Recuperar contraseña */}
-            <TouchableOpacity onPress={handleForgotPassword} style={{ width: "100%" }}>
-              <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
+            <TouchableOpacity
+              onPress={handleForgotPassword}
+              style={{ width: "100%" }}
+              disabled={loadingReset} // desactiva mientras está cargando
+            >
+              <Text
+                style={[
+                  styles.forgotPassword,
+                  loadingReset && { opacity: 0.5 }, //  gris temporal
+                ]}
+              >
+                ¿Olvidaste tu contraseña?
+              </Text>
             </TouchableOpacity>
 
+
             {/* Botón para ingresar */}
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <TouchableOpacity 
+              style={[styles.button, !canSubmit && styles.buttonDisabled]} 
+              onPress={handleLogin}
+              disabled={!canSubmit}
+            >
               <Text style={styles.buttonText}>Ingresar</Text>
             </TouchableOpacity>
+
 
             {/* Botón de login con Google (desactivado) */}
               <TouchableOpacity 
@@ -371,4 +385,9 @@ const styles = StyleSheet.create({
     color: '#777',
     fontWeight: 'bold'
   },
+
+  buttonDisabled: {
+  opacity: 0.5
+},
+
 });
