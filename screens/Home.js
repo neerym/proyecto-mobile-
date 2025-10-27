@@ -5,7 +5,8 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   Image, 
-  Animated 
+  Animated, 
+  ImageBackground 
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { signOut } from 'firebase/auth';
@@ -69,86 +70,101 @@ export default function Home({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
-      <Text style={styles.title}>Panel Principal</Text>
-      <Text style={styles.subtitle}>Seleccioná un módulo para continuar</Text>
+    <ImageBackground
+      source={require('../assets/fondoPistacho.jpg')}
+      style={styles.backgroundImage}
+    >
+      <View style={styles.overlay}>
+        <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
+        <Text style={styles.title}>Panel Principal</Text>
+        <Text style={styles.subtitle}>Seleccioná un módulo para continuar</Text>
 
-      <Animated.View 
-        style={[
-          styles.grid,
-          { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
-        ]}
-      >
-        <TouchableOpacity 
-          style={styles.card} 
-          onPress={() => navigation.navigate('Items')}
-        >
-          <FontAwesome name="shopping-cart" size={40} color="#789C3B" />
-          <Text style={styles.cardText}>Productos</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
-          <FontAwesome name="truck" size={40} color="#789C3B" />
-          <Text style={styles.cardText}>Proveedores</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
-          <FontAwesome name="tags" size={40} color="#789C3B" />
-          <Text style={styles.cardText}>Marcas</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
-          <FontAwesome name="folder-open" size={40} color="#789C3B" />
-          <Text style={styles.cardText}>Categorías</Text>
-        </TouchableOpacity>
-      </Animated.View>
-
-      {/* Botón cerrar sesión */}
-      <TouchableOpacity 
-        style={[styles.button, styles.logoutButton]} 
-        onPress={handleLogout}
-      >
-        <Text style={styles.logoutText}>Cerrar sesión</Text>
-      </TouchableOpacity>
-
-      {/* Botón ver perfil */}
-      <TouchableOpacity 
-        style={[styles.button, styles.profileButton]} 
-        onPress={() => navigation.navigate('Profile')}
-      >
-        <Text style={styles.profileText}>Ver perfil</Text>
-      </TouchableOpacity>
-
-      {toastVisible && (
-        <Animated.View
+        <Animated.View 
           style={[
-            styles.toast,
-            {
-              opacity: toastAnim,
-              transform: [{
-                translateY: toastAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [50, 0],
-                }),
-              }],
-            },
+            styles.grid,
+            { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
           ]}
         >
-          <Text style={styles.toastText}>{toastMessage}</Text>
+          <TouchableOpacity 
+            style={styles.card} 
+            onPress={() => navigation.navigate('Items')}
+          >
+            <FontAwesome name="shopping-cart" size={40} color="#789C3B" />
+            <Text style={styles.cardText}>Productos</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+            <FontAwesome name="truck" size={40} color="#789C3B" />
+            <Text style={styles.cardText}>Proveedores</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+            <FontAwesome name="tags" size={40} color="#789C3B" />
+            <Text style={styles.cardText}>Marcas</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+            <FontAwesome name="folder-open" size={40} color="#789C3B" />
+            <Text style={styles.cardText}>Categorías</Text>
+          </TouchableOpacity>
+
+          {/* Nuevo cuadrado: Ver Perfil */}
+          <TouchableOpacity 
+            style={styles.card} 
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <FontAwesome name="user" size={40} color="#789C3B" />
+            <Text style={styles.cardText}>Perfil</Text>
+          </TouchableOpacity>
+
+          {/* Botón de logout también dentro del grid (opcional) */}
+          <TouchableOpacity 
+            style={[styles.card, { backgroundColor: '#ffe6e6' }]} 
+            onPress={handleLogout}
+          >
+            <FontAwesome name="sign-out" size={40} color="#b71c1c" />
+            <Text style={[styles.cardText, { color: '#b71c1c' }]}>Salir</Text>
+          </TouchableOpacity>
         </Animated.View>
-      )}
-    </View>
+
+        {toastVisible && (
+          <Animated.View
+            style={[
+              styles.toast,
+              {
+                opacity: toastAnim,
+                transform: [{
+                  translateY: toastAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [50, 0],
+                  }),
+                }],
+              },
+            ]}
+          >
+            <Text style={styles.toastText}>{toastMessage}</Text>
+          </Animated.View>
+        )}
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  backgroundImage: {
     flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  overlay: {
+    flex: 1,
+    width: '100%',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: '#789C3B',
     paddingTop: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', // leve velo blanco
   },
   logo: {
     width: 100,
@@ -158,13 +174,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#2e7d32',
     marginBottom: 5,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 15,
-    color: '#f0f0f0',
+    color: '#444',
     marginBottom: 25,
     textAlign: 'center',
   },
@@ -193,36 +209,6 @@ const styles = StyleSheet.create({
     color: '#2e7d32',
     fontWeight: 'bold',
     marginTop: 10,
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: '#fff',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 10,
-    elevation: 3,
-    width: '70%',
-    alignItems: 'center',
-    marginTop: 15,
-  },
-  logoutButton: {
-    borderColor: '#2e7d32',
-    borderWidth: 1.5,
-    marginTop: 40,
-  },
-  logoutText: {
-    color: '#2e7d32',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  profileButton: {
-    borderColor: '#2e7d32',
-    borderWidth: 1.5,
-    backgroundColor: '#2e7d32',
-  },
-  profileText: {
-    color: '#fff',
-    fontWeight: 'bold',
     fontSize: 16,
   },
   toast: {

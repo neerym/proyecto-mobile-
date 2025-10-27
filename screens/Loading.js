@@ -1,40 +1,54 @@
-import React, { useEffect } from 'react';
-import { View, Image, Text, StyleSheet } from 'react-native';
+    import React, { useEffect } from 'react';
+    import { View, Image, Text, StyleSheet, ImageBackground } from 'react-native';
 
-//  Pantalla de carga inicial (Splash Screen)
-export default function Loading({ navigation }) {
+    // Pantalla de carga inicial (Splash Screen)
+    export default function Loading({ navigation }) {
 
     useEffect(() => {
-        // Redirige a Home 
+        // Redirige a Home después de 3 segundos
         const timer = setTimeout(() => {
-            navigation.replace('Home');
+        navigation.replace('Home');
         }, 3000);
 
         // Limpieza del temporizador 
         return () => clearTimeout(timer);
     }, [navigation]);
 
-    //  Render de la pantalla de carga
+    // Render de la pantalla de carga
     return (
-        <View style={styles.container}>
-            {/* Logo  app */}
+        <ImageBackground
+        source={require('../assets/fondoPistacho.jpg')} // Asegurate de que el archivo esté en /assets
+        style={styles.backgroundImage}
+        >
+        <View style={styles.overlay}>
             <Text style={styles.header}>Sana-mente Natural</Text>
-            <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
-            {/* Eslogan debajo del logo */}
+            <Image
+            source={require('../assets/logoblanco.png')} // También debe estar en /assets
+            style={styles.logo}
+            />
             <Text style={styles.slogan}>
-                Porque comer bien es la base de sentirse mejor
+            Porque comer bien es la base de sentirse mejor
             </Text>
         </View>
+        </ImageBackground>
     );
-}
+    }
 
-//  Estilos de la pantalla de carga
-const styles = StyleSheet.create({
-    container: {
+    // Estilos
+    const styles = StyleSheet.create({
+    backgroundImage: {
         flex: 1,
-        backgroundColor: '#789C3B',
+        resizeMode: 'cover',
         justifyContent: 'center',
         alignItems: 'center',
+        width: '100%',
+    },
+    overlay: {
+        flex: 1,
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.35)', // Opcional: leve oscurecido
     },
     logo: {
         width: 150,
@@ -47,15 +61,15 @@ const styles = StyleSheet.create({
         marginTop: 20,
         textAlign: 'center',
     },
-  header: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
-    marginBottom: 10,
-    letterSpacing: 1.5,
-  },
+    header: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#ffffff',
+        textAlign: 'center',
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 2, height: 2 },
+        textShadowRadius: 4,
+        marginBottom: 10,
+        letterSpacing: 1.5,
+    },
 });
