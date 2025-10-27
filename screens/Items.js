@@ -10,13 +10,12 @@ import {
     Alert,
     ActivityIndicator,
     ImageBackground,
-    Dimensions,
-} from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
-import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '../src/config/firebaseConfig';
+    } from 'react-native';
+    import { FontAwesome } from '@expo/vector-icons';
+    import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
+    import { db } from '../src/config/firebaseConfig';
 
-export default function Items({ navigation }) {
+    export default function Items({ navigation }) {
     const [search, setSearch] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -24,53 +23,49 @@ export default function Items({ navigation }) {
     useEffect(() => {
         const ref = collection(db, 'productos');
         const unsubscribe = onSnapshot(
-            ref,
-            (snapshot) => {
-                const items = snapshot.docs.map((d) => ({
-                    id: d.id,
-                    ...d.data(),
-                }));
+        ref,
+        (snapshot) => {
+            const items = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+            }));
 
-                const ts = (x) =>
-                    x?.seconds
-                        ? x.seconds
-                        : typeof x === 'number'
-                        ? x
-                        : 0;
-                items.sort((a, b) => ts(b.createdAt) - ts(a.createdAt));
+            const ts = (x) =>
+            x?.seconds ? x.seconds : typeof x === 'number' ? x : 0;
+            items.sort((a, b) => ts(b.createdAt) - ts(a.createdAt));
 
-                setProducts(items);
-                setLoading(false);
-            },
-            (error) => {
-                console.log('Error onSnapshot:', error);
-                Alert.alert('Error', 'No se pudieron cargar los productos.');
-                setLoading(false);
-            }
+            setProducts(items);
+            setLoading(false);
+        },
+        (error) => {
+            console.log('Error onSnapshot:', error);
+            Alert.alert('Error', 'No se pudieron cargar los productos.');
+            setLoading(false);
+        }
         );
         return () => unsubscribe();
     }, []);
 
     const handleDelete = (id, name) => {
         Alert.alert(
-            'Eliminar producto',
-            `¿Seguro que deseas eliminar "${name}"?`,
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Eliminar',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await deleteDoc(doc(db, 'productos', id));
-                            Alert.alert('Eliminado', `${name} fue borrado.`);
-                        } catch (error) {
-                            console.log('Error al eliminar:', error);
-                            Alert.alert('Error', 'No se pudo eliminar el producto.');
-                        }
-                    },
-                },
-            ]
+        'Eliminar producto',
+        `¿Seguro que deseas eliminar "${name}"?`,
+        [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+                try {
+                await deleteDoc(doc(db, 'productos', id));
+                Alert.alert('Eliminado', `${name} fue borrado.`);
+                } catch (error) {
+                console.log('Error al eliminar:', error);
+                Alert.alert('Error', 'No se pudo eliminar el producto.');
+                }
+            },
+            },
+        ]
         );
     };
 
@@ -80,121 +75,113 @@ export default function Items({ navigation }) {
 
     const renderItem = ({ item }) => (
         <View style={styles.card}>
-            <Image
-                source={{
-                    uri: item.imageUrl || 'https://via.placeholder.com/80',
-                }}
-                style={styles.image}
-            />
-            <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text>Cantidad: {item.quantity} u</Text>
-                <Text>Precio: ${item.price} c/u</Text>
-                {item.description ? <Text>Descripción: {item.description}</Text> : null}
-            </View>
+        <Image
+            source={{
+            uri: item.imageUrl || 'https://via.placeholder.com/80',
+            }}
+            style={styles.image}
+        />
+        <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.detail}>Cantidad: {item.quantity} u</Text>
+            <Text style={styles.detail}>Precio: ${item.price} c/u</Text>
+            {item.description ? (
+            <Text style={styles.detail}>Descripción: {item.description}</Text>
+            ) : null}
+        </View>
+        <View style={styles.actions}>
             <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => navigation.navigate('EditProduct', { product: item })}
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('EditProduct', { product: item })}
             >
-                <FontAwesome name="pencil" size={20} color="#555" />
+            <FontAwesome name="pencil" size={20} color="#2e7d32" />
             </TouchableOpacity>
             <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => handleDelete(item.id, item.name)}
+            style={styles.iconButton}
+            onPress={() => handleDelete(item.id, item.name)}
             >
-                <FontAwesome name="trash" size={20} color="red" />
+            <FontAwesome name="trash" size={20} color="red" />
             </TouchableOpacity>
+        </View>
         </View>
     );
 
     if (loading) {
         return (
-            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" />
-                <Text style={{ marginTop: 10 }}>Cargando productos...</Text>
-            </View>
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+            <ActivityIndicator size="large" color="#2e7d32" />
+            <Text style={{ marginTop: 10, color: '#555' }}>Cargando productos...</Text>
+        </View>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <ImageBackground
-                source={require('../assets/fondoPistacho.jpg')}
-                style={styles.headerBackground}
-                resizeMode="cover"
+        <ImageBackground
+        source={require('../assets/fondoPistacho.jpg')}
+        style={styles.background}
+        >
+        <View style={styles.overlay}>
+            <View style={styles.header}>
+            <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => navigation.navigate('Home')}
             >
-                <View style={styles.header}>
-                    <TouchableOpacity
-                        style={styles.backButton}
-                        onPress={() => navigation.navigate('Home')}
-                    >
-                        <FontAwesome name="arrow-left" size={20} color="rgba(255, 255, 255, 1)" />
-                    </TouchableOpacity>
+                <FontAwesome name="arrow-left" size={20} color="#fff" />
+            </TouchableOpacity>
 
-                    <View style={styles.searchContainer}>
-                        <FontAwesome name="search" size={20} color="#555" />
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="Buscar producto..."
-                            value={search}
-                            onChangeText={setSearch}
-                        />
-                    </View>
+            <View style={styles.searchContainer}>
+                <FontAwesome name="search" size={18} color="#555" />
+                <TextInput
+                style={styles.searchInput}
+                placeholder="Buscar producto..."
+                value={search}
+                onChangeText={setSearch}
+                placeholderTextColor="#888"
+                />
+            </View>
 
-                    <TouchableOpacity
-                        style={styles.addButton}
-                        onPress={() => navigation.navigate('AddProduct')}
-                    >
-                        <Text style={styles.addButtonText}>+ Agregar producto</Text>
-                    </TouchableOpacity>
-                </View>
-            </ImageBackground>
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => navigation.navigate('AddProduct')}
+            >
+                <FontAwesome name="plus" size={16} color="#fff" />
+                <Text style={styles.addButtonText}>Agregar producto</Text>
+            </TouchableOpacity>
+            </View>
 
             <FlatList
-                data={filteredProducts}
-                keyExtractor={(item) => item.id}
-                renderItem={renderItem}
-                contentContainerStyle={{ paddingBottom: 20 }}
-                ListEmptyComponent={<Text>No hay productos para mostrar.</Text>}
+            data={filteredProducts}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 40 }}
+            ListEmptyComponent={
+                <Text style={{ color: '#fff', textAlign: 'center', marginTop: 20 }}>
+                No hay productos para mostrar.
+                </Text>
+            }
             />
         </View>
+        </ImageBackground>
     );
-}
+    }
 
-const styles = StyleSheet.create({
-    container: {
-        paddingTop: 50,
+    const styles = StyleSheet.create({
+    background: {
         flex: 1,
-        padding: 15,
-        backgroundColor: '#f0f1f5ff',
+        resizeMode: 'cover',
     },
-    headerBackground:{
-    height: 170,
-    marginBottom: 15,
-    overflow: 'hidden', 
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius:30,
-},
-
-header:{
-    backgroundColor:"rgba(29, 53, 19, 0.55)" ,//COLOR OPACIDAD
-    margin:0,
-    width:'100%',
-},
-    backButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        paddingVertical: 8,
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(29, 53, 19, 0.6)',
+        paddingTop: 60,
         paddingHorizontal: 15,
-        borderRadius: 8,
-        marginBottom: 15,
     },
-    backText: {
-        marginTop: 2,
-        color: '#8f2ac9ff',
-        fontWeight: 'bold',
-        marginLeft: 8,
+    header: {
+        marginBottom: 20,
+    },
+    backButton: {
+        alignSelf: 'flex-start',
+        marginBottom: 10,
     },
     searchContainer: {
         flexDirection: 'row',
@@ -202,57 +189,73 @@ header:{
         backgroundColor: '#fff',
         borderRadius: 10,
         paddingHorizontal: 10,
-        marginBottom: 15,
         borderWidth: 1,
         borderColor: '#ccc',
-        marginRight:20,
-        marginLeft:20
+        marginBottom: 10,
     },
     searchInput: {
         flex: 1,
         padding: 10,
         marginLeft: 5,
+        color: '#333',
     },
     addButton: {
-        backgroundColor: '#789C3B',
-        padding: 15,
-        borderRadius: 10,
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 15,
-        marginRight:25,
-        marginLeft:25,
-        borderColor:'#ffff',
-        borderWidth:1
+        justifyContent: 'center',
+        backgroundColor: '#789C3B',
+        paddingVertical: 12,
+        borderRadius: 10,
+        marginTop: 5,
+        borderColor: '#fff',
+        borderWidth: 1,
     },
     addButtonText: {
         color: '#fff',
         fontWeight: 'bold',
-        
-
+        marginLeft: 6,
+        fontSize: 15,
     },
     card: {
-        backgroundColor: '#fff',
+        backgroundColor: '#e6f7caff', // tono pistacho suave
+        borderColor: '#789C3B',
         padding: 15,
-        borderRadius: 10,
-        marginBottom: 10,
+        borderRadius: 12,
+        marginBottom: 12,
         flexDirection: 'row',
         alignItems: 'center',
-        elevation: 2,
-        borderColor:'#789C3B',
-        borderWidth:0.3
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        elevation: 4,
+        borderColor: '#789C3B',
+        borderWidth: 0.3,
+        opacity: 0.8,
     },
     image: {
-        width: 80,
-        height: 80,
+        width: 75,
+        height: 75,
         borderRadius: 10,
         marginRight: 10,
     },
     name: {
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: 'bold',
-        marginBottom: 5,
+        color: '#2e7d32',
+        marginBottom: 3,
+    },
+    detail: {
+        color: '#444',
+        fontSize: 14,
+    },
+    actions: {
+        flexDirection: 'column',
+        marginLeft: 8,
+        justifyContent: 'space-between',
+        height: 70,
     },
     iconButton: {
-        marginLeft: 10,
+        alignSelf: 'center',
     },
 });

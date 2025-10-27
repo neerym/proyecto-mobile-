@@ -212,7 +212,7 @@ import {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
-            <Text style={styles.backButtonText}>Volver al inicio</Text>
+            <Text style={styles.backButtonText}>Volver al Panel Principal</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
