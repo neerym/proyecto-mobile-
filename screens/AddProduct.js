@@ -8,6 +8,9 @@ import {
     Image,
     ImageBackground,
     Alert,
+    ScrollView,
+    KeyboardAvoidingView,
+    Platform,
     } from 'react-native';
     import { FontAwesome } from '@expo/vector-icons';
     import * as ImagePicker from 'expo-image-picker';
@@ -22,9 +25,9 @@ import {
     const [price, setPrice] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState(null);
-    const [type, setType] = useState('otro');
+    const [type, setType] = useState('otros');
 
-    //  Elegir o sacar foto
+    // Elegir o sacar foto
     const pickImage = async (fromCamera = false) => {
         try {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -37,16 +40,14 @@ import {
             ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 })
             : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 });
 
-        if (!result.canceled) {
-            setImage(result.assets[0].uri);
-        }
+        if (!result.canceled) setImage(result.assets[0].uri);
         } catch (error) {
         console.log('Error al seleccionar imagen:', error);
         Alert.alert('Error', 'No se pudo seleccionar la imagen.');
         }
     };
 
-    //  Guardar producto en Firestore
+    // Guardar producto
     const handleAdd = async () => {
         if (!name || !quantity || !price) {
         Alert.alert('Error', 'Nombre, cantidad y precio son obligatorios');
@@ -62,7 +63,7 @@ import {
             price: parseFloat(price),
             description,
             imageUrl,
-            type,
+            tipo: type, // 👈 unificado con campo "tipo" como usa Items
             createdAt: new Date(),
         });
 
@@ -76,101 +77,103 @@ import {
 
     return (
         <ImageBackground source={require('../assets/fondoPistacho.jpg')} style={styles.background}>
-        <View style={styles.overlay}>
-            <Text style={styles.title}>Agregar Producto</Text>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <View style={styles.overlay}>
+                <Text style={styles.title}>Agregar Producto</Text>
 
-            {/* Imagen seleccionada */}
-            <View style={styles.imageContainer}>
-            <Image
-                source={{ uri: image || Image.resolveAssetSource(defaultImage).uri }}
-                style={styles.imagePreview}
-            />
-            <View style={styles.photoButtons}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(false)}>
-                <FontAwesome name="image" size={20} color="#fff" />
-                <Text style={styles.iconText}>Galería</Text>
+                {/* Imagen */}
+                <View style={styles.imageContainer}>
+                <Image
+                    source={{ uri: image || Image.resolveAssetSource(defaultImage).uri }}
+                    style={styles.imagePreview}
+                />
+                <View style={styles.photoButtons}>
+                    <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(false)}>
+                    <FontAwesome name="image" size={20} color="#fff" />
+                    <Text style={styles.iconText}>Galería</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(true)}>
+                    <FontAwesome name="camera" size={20} color="#fff" />
+                    <Text style={styles.iconText}>Cámara</Text>
+                    </TouchableOpacity>
+                </View>
+                </View>
+
+                {/* Campos */}
+                <Text style={styles.label}>Nombre del producto</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Ej: Yerba orgánica"
+                value={name}
+                onChangeText={setName}
+                placeholderTextColor="#ddd"
+                />
+
+                <Text style={styles.label}>Descripción</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Breve descripción (opcional)"
+                value={description}
+                onChangeText={setDescription}
+                placeholderTextColor="#ddd"
+                />
+
+                <Text style={styles.label}>Cantidad en stock</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Ej: 10"
+                value={quantity}
+                onChangeText={setQuantity}
+                keyboardType="numeric"
+                placeholderTextColor="#ddd"
+                />
+
+                <Text style={styles.label}>Precio unitario</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Ej: 1500"
+                value={price}
+                onChangeText={setPrice}
+                keyboardType="numeric"
+                placeholderTextColor="#ddd"
+                />
+
+                <Text style={styles.label}>Tipo de producto</Text>
+                <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={type}
+                    onValueChange={(value) => setType(value)}
+                    style={styles.picker}
+                    dropdownIconColor="#fff"
+                >
+                    <Picker.Item label="Alimento" value="alimento" />
+                    <Picker.Item label="Bebida" value="bebida" />
+                    <Picker.Item label="Otros" value="otros" />
+                </Picker>
+                </View>
+
+                {/* Botones */}
+                <TouchableOpacity style={styles.saveButton} onPress={handleAdd}>
+                <Text style={styles.saveButtonText}>Guardar</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(true)}>
-                <FontAwesome name="camera" size={20} color="#fff" />
-                <Text style={styles.iconText}>Cámara</Text>
+                <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
                 </TouchableOpacity>
             </View>
-            </View>
-
-            {/* Campos */}
-            <Text style={styles.label}>Nombre del producto</Text>
-            <TextInput
-            style={styles.input}
-            placeholder="Ej: Yerba orgánica"
-            value={name}
-            onChangeText={setName}
-            placeholderTextColor="#ddd"
-            />
-
-            <Text style={styles.label}>Descripción</Text>
-            <TextInput
-            style={styles.input}
-            placeholder="Breve descripción (opcional)"
-            value={description}
-            onChangeText={setDescription}
-            placeholderTextColor="#ddd"
-            />
-
-            <Text style={styles.label}>Cantidad en stock</Text>
-            <TextInput
-            style={styles.input}
-            placeholder="Ej: 10"
-            value={quantity}
-            onChangeText={setQuantity}
-            keyboardType="numeric"
-            placeholderTextColor="#ddd"
-            />
-
-            <Text style={styles.label}>Precio unitario</Text>
-            <TextInput
-            style={styles.input}
-            placeholder="Ej: 1500"
-            value={price}
-            onChangeText={setPrice}
-            keyboardType="numeric"
-            placeholderTextColor="#ddd"
-            />
-
-            <Text style={styles.label}>Tipo de producto</Text>
-            <View style={styles.pickerContainer}>
-            <Picker
-                selectedValue={type}
-                onValueChange={(value) => setType(value)}
-                style={styles.picker}
-                dropdownIconColor="#fff"
-            >
-                <Picker.Item label="Alimentos" value="alimento" />
-                <Picker.Item label="Bebidas" value="bebida" />
-                <Picker.Item label="Suplementos" value="suplemento" />
-                <Picker.Item label="Otros" value="otro" />
-            </Picker>
-            </View>
-
-            {/* Botones */}
-            <TouchableOpacity style={styles.saveButton} onPress={handleAdd}>
-            <Text style={styles.saveButtonText}>Guardar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-        </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
         </ImageBackground>
     );
     }
 
     const styles = StyleSheet.create({
-    background: {
-        flex: 1,
-        resizeMode: 'cover',
-        width: '100%',
-    },
+    background: { flex: 1, resizeMode: 'cover', width: '100%' },
     overlay: {
         flex: 1,
         backgroundColor: 'rgba(29, 53, 19, 0.65)',
@@ -183,11 +186,7 @@ import {
         textAlign: 'center',
         marginBottom: 20,
     },
-    label: {
-        color: '#fff',
-        marginBottom: 5,
-        fontWeight: '600',
-    },
+    label: { color: '#fff', marginBottom: 5, fontWeight: '600' },
     input: {
         backgroundColor: 'rgba(255,255,255,0.15)',
         borderRadius: 10,
@@ -195,10 +194,7 @@ import {
         marginBottom: 15,
         color: '#fff',
     },
-    imageContainer: {
-        alignItems: 'center',
-        marginBottom: 15,
-    },
+    imageContainer: { alignItems: 'center', marginBottom: 15 },
     imagePreview: {
         width: 120,
         height: 120,
@@ -226,10 +222,7 @@ import {
         borderRadius: 10,
         marginBottom: 15,
     },
-    picker: {
-        color: '#fff',
-        height: 45,
-    },
+    picker: { color: '#fff', height: 45 },
     saveButton: {
         backgroundColor: '#fff',
         paddingVertical: 15,

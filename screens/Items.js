@@ -17,9 +17,9 @@ import {
 
     export default function Items({ navigation }) {
     const [search, setSearch] = useState('');
-    const [selectedType, setSelectedType] = useState('Todos');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedType, setSelectedType] = useState('Todos');
 
     useEffect(() => {
         const ref = collection(db, 'productos');
@@ -71,25 +71,28 @@ import {
     };
 
     const filteredProducts = products.filter((p) => {
-        const matchesSearch = (p.name || '').toLowerCase().includes(search.toLowerCase());
-        const matchesType = selectedType === 'Todos' || p.type === selectedType;
-        return matchesSearch && matchesType;
+        const matchName = (p.name || '')
+        .toLowerCase()
+        .includes(search.toLowerCase());
+        const matchType =
+        selectedType === 'Todos' ||
+        (p.tipo && p.tipo.toLowerCase() === selectedType.toLowerCase());
+        return matchName && matchType;
     });
 
     const renderItem = ({ item }) => (
         <View style={styles.card}>
         <Image
             source={
-                item.imageUrl
-                ? { uri: item.imageUrl }
+            item.imageUrl
+                ? { uri: String(item.imageUrl) }
                 : require('../assets/default.png')
             }
             style={styles.image}
-            />
-
+        />
         <View style={{ flex: 1 }}>
             <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.detail}>Tipo: {item.type || 'Sin tipo'}</Text>
+            {item.tipo && <Text style={styles.type}>Tipo: {item.tipo}</Text>}
             <Text style={styles.detail}>Cantidad: {item.quantity} u</Text>
             <Text style={styles.detail}>Precio: ${item.price} c/u</Text>
             {item.description ? (
@@ -115,9 +118,16 @@ import {
 
     if (loading) {
         return (
-        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <View
+            style={[
+            styles.container,
+            { justifyContent: 'center', alignItems: 'center' },
+            ]}
+        >
             <ActivityIndicator size="large" color="#2e7d32" />
-            <Text style={{ marginTop: 10, color: '#555' }}>Cargando productos...</Text>
+            <Text style={{ marginTop: 10, color: '#555' }}>
+            Cargando productos...
+            </Text>
         </View>
         );
     }
@@ -147,24 +157,24 @@ import {
                 />
             </View>
 
-            {/* 🔹 Filtros por tipo */}
+            {/* Filtro por tipo */}
             <View style={styles.filterContainer}>
-                {['Todos', 'Alimento', 'Bebida', 'Suplemento', 'Otro'].map((type) => (
+                {['Todos', 'Alimento', 'Bebida', 'Otros'].map((tipo) => (
                 <TouchableOpacity
-                    key={type}
+                    key={tipo}
                     style={[
                     styles.filterButton,
-                    selectedType === type && styles.filterButtonActive,
+                    selectedType === tipo && styles.filterButtonActive,
                     ]}
-                    onPress={() => setSelectedType(type)}
+                    onPress={() => setSelectedType(tipo)}
                 >
                     <Text
                     style={[
                         styles.filterText,
-                        selectedType === type && styles.filterTextActive,
+                        selectedType === tipo && styles.filterTextActive,
                     ]}
                     >
-                    {type}
+                    {tipo}
                     </Text>
                 </TouchableOpacity>
                 ))}
@@ -196,23 +206,15 @@ import {
     }
 
     const styles = StyleSheet.create({
-    background: {
-        flex: 1,
-        resizeMode: 'cover',
-    },
+    background: { flex: 1, resizeMode: 'cover' },
     overlay: {
         flex: 1,
         backgroundColor: 'rgba(29, 53, 19, 0.6)',
         paddingTop: 60,
         paddingHorizontal: 15,
     },
-    header: {
-        marginBottom: 20,
-    },
-    backButton: {
-        alignSelf: 'flex-start',
-        marginBottom: 10,
-    },
+    header: { marginBottom: 20 },
+    backButton: { alignSelf: 'flex-start', marginBottom: 10 },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -231,30 +233,25 @@ import {
     },
     filterContainer: {
         flexDirection: 'row',
-        justifyContent: 'center',
-        flexWrap: 'wrap',
-        marginBottom: 15,
+        justifyContent: 'space-between',
+        marginBottom: 12,
+        paddingHorizontal: 5,
     },
     filterButton: {
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        borderRadius: 20,
         paddingVertical: 6,
-        paddingHorizontal: 15,
-        marginHorizontal: 5,
-        marginVertical: 4,
-        borderWidth: 1,
-        borderColor: '#fff',
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        backgroundColor: 'rgba(255,255,255,0.2)',
     },
     filterButtonActive: {
         backgroundColor: '#fff',
     },
     filterText: {
         color: '#fff',
-        fontWeight: '600',
+        fontWeight: 'bold',
     },
     filterTextActive: {
         color: '#2e7d32',
-        fontWeight: 'bold',
     },
     addButton: {
         flexDirection: 'row',
@@ -281,37 +278,17 @@ import {
         marginBottom: 12,
         flexDirection: 'row',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
         elevation: 4,
-        borderWidth: 0.3,
-        opacity: 0.9,
     },
-    image: {
-        width: 75,
-        height: 75,
-        borderRadius: 10,
-        marginRight: 10,
-    },
-    name: {
-        fontSize: 17,
-        fontWeight: 'bold',
-        color: '#2e7d32',
-        marginBottom: 3,
-    },
-    detail: {
-        color: '#333',
-        fontSize: 14,
-    },
+    image: { width: 75, height: 75, borderRadius: 10, marginRight: 10 },
+    name: { fontSize: 17, fontWeight: 'bold', color: '#2e7d32' },
+    type: { color: '#555', fontStyle: 'italic', marginBottom: 3 },
+    detail: { color: '#333', fontSize: 14 },
     actions: {
         flexDirection: 'column',
         marginLeft: 8,
         justifyContent: 'space-between',
         height: 70,
     },
-    iconButton: {
-        alignSelf: 'center',
-    },
+    iconButton: { alignSelf: 'center' },
 });

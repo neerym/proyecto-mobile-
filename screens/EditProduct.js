@@ -8,6 +8,9 @@ import {
     Image,
     Alert,
     ImageBackground,
+    ScrollView,
+    KeyboardAvoidingView,
+    Platform,
     } from 'react-native';
     import { FontAwesome } from '@expo/vector-icons';
     import * as ImagePicker from 'expo-image-picker';
@@ -24,9 +27,9 @@ import {
     const [price, setPrice] = useState(product.price?.toString() || '');
     const [description, setDescription] = useState(product.description || '');
     const [imageUrl, setImageUrl] = useState(product.imageUrl || '');
-    const [type, setType] = useState(product.type || 'otro');
+    const [type, setType] = useState(product.tipo || 'otros');
 
-    //  Seleccionar imagen desde cámara o galería
+    // Seleccionar imagen
     const pickImage = async (fromCamera = false) => {
         try {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -64,7 +67,7 @@ import {
             price: parseFloat(price),
             description,
             imageUrl: imageUrl || Image.resolveAssetSource(defaultImage).uri,
-            type,
+            tipo: type,
         });
 
         Alert.alert('✅ Éxito', `${name} fue actualizado correctamente.`);
@@ -77,103 +80,105 @@ import {
 
     return (
         <ImageBackground source={require('../assets/fondoPistacho.jpg')} style={styles.background}>
-        <View style={styles.overlay}>
-            <Text style={styles.title}>Editar Producto</Text>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <View style={styles.overlay}>
+                <Text style={styles.title}>Editar Producto</Text>
 
-            {/* Imagen del producto */}
-            <View style={styles.imageContainer}>
-            <Image
-                source={{
-                uri: imageUrl || Image.resolveAssetSource(defaultImage).uri,
-                }}
-                style={styles.imagePreview}
-            />
-            <View style={styles.photoButtons}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(false)}>
-                <FontAwesome name="image" size={18} color="#fff" />
-                <Text style={styles.iconText}>Galería</Text>
+                {/* Imagen del producto */}
+                <View style={styles.imageContainer}>
+                <Image
+                    source={{
+                    uri: imageUrl || Image.resolveAssetSource(defaultImage).uri,
+                    }}
+                    style={styles.imagePreview}
+                />
+                <View style={styles.photoButtons}>
+                    <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(false)}>
+                    <FontAwesome name="image" size={18} color="#fff" />
+                    <Text style={styles.iconText}>Galería</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(true)}>
+                    <FontAwesome name="camera" size={18} color="#fff" />
+                    <Text style={styles.iconText}>Cámara</Text>
+                    </TouchableOpacity>
+                </View>
+                </View>
+
+                {/* Campos de formulario */}
+                <Text style={styles.label}>Nombre del producto</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                value={name}
+                onChangeText={setName}
+                placeholderTextColor="#ddd"
+                />
+
+                <Text style={styles.label}>Descripción</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Descripción (opcional)"
+                value={description}
+                onChangeText={setDescription}
+                placeholderTextColor="#ddd"
+                />
+
+                <Text style={styles.label}>Cantidad en stock</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Stock"
+                value={quantity}
+                onChangeText={setQuantity}
+                keyboardType="numeric"
+                placeholderTextColor="#ddd"
+                />
+
+                <Text style={styles.label}>Precio unitario</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Precio"
+                value={price}
+                onChangeText={setPrice}
+                keyboardType="numeric"
+                placeholderTextColor="#ddd"
+                />
+
+                <Text style={styles.label}>Tipo de producto</Text>
+                <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={type}
+                    onValueChange={(value) => setType(value)}
+                    style={styles.picker}
+                    dropdownIconColor="#fff"
+                >
+                    <Picker.Item label="Alimento" value="alimento" />
+                    <Picker.Item label="Bebida" value="bebida" />
+                    <Picker.Item label="Otros" value="otros" />
+                </Picker>
+                </View>
+
+                {/* Botones */}
+                <TouchableOpacity style={styles.saveButton} onPress={handleUpdate}>
+                <Text style={styles.saveButtonText}>Guardar cambios</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(true)}>
-                <FontAwesome name="camera" size={18} color="#fff" />
-                <Text style={styles.iconText}>Cámara</Text>
+                <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
                 </TouchableOpacity>
             </View>
-            </View>
-
-            {/* Campos de formulario */}
-            <Text style={styles.label}>Nombre del producto</Text>
-            <TextInput
-            style={styles.input}
-            placeholder="Nombre"
-            value={name}
-            onChangeText={setName}
-            placeholderTextColor="#ddd"
-            />
-
-            <Text style={styles.label}>Descripción</Text>
-            <TextInput
-            style={styles.input}
-            placeholder="Descripción (opcional)"
-            value={description}
-            onChangeText={setDescription}
-            placeholderTextColor="#ddd"
-            />
-
-            <Text style={styles.label}>Cantidad en stock</Text>
-            <TextInput
-            style={styles.input}
-            placeholder="Stock"
-            value={quantity}
-            onChangeText={setQuantity}
-            keyboardType="numeric"
-            placeholderTextColor="#ddd"
-            />
-
-            <Text style={styles.label}>Precio unitario</Text>
-            <TextInput
-            style={styles.input}
-            placeholder="Precio"
-            value={price}
-            onChangeText={setPrice}
-            keyboardType="numeric"
-            placeholderTextColor="#ddd"
-            />
-
-            <Text style={styles.label}>Tipo de producto</Text>
-            <View style={styles.pickerContainer}>
-            <Picker
-                selectedValue={type}
-                onValueChange={(value) => setType(value)}
-                style={styles.picker}
-                dropdownIconColor="#fff"
-            >
-                <Picker.Item label="Alimentos" value="alimento" />
-                <Picker.Item label="Bebidas" value="bebida" />
-                <Picker.Item label="Suplementos" value="suplemento" />
-                <Picker.Item label="Otros" value="otro" />
-            </Picker>
-            </View>
-
-            {/* Botones */}
-            <TouchableOpacity style={styles.saveButton} onPress={handleUpdate}>
-            <Text style={styles.saveButtonText}>Guardar cambios</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-        </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
         </ImageBackground>
     );
     }
 
     const styles = StyleSheet.create({
-    background: {
-        flex: 1,
-        resizeMode: 'cover',
-        width: '100%',
-    },
+    background: { flex: 1, resizeMode: 'cover', width: '100%' },
     overlay: {
         flex: 1,
         backgroundColor: 'rgba(29, 53, 19, 0.7)',
@@ -186,10 +191,7 @@ import {
         textAlign: 'center',
         marginBottom: 20,
     },
-    imageContainer: {
-        alignItems: 'center',
-        marginBottom: 15,
-    },
+    imageContainer: { alignItems: 'center', marginBottom: 15 },
     imagePreview: {
         width: 120,
         height: 120,
@@ -211,10 +213,7 @@ import {
         paddingVertical: 6,
         borderRadius: 10,
     },
-    iconText: {
-        color: '#fff',
-        marginLeft: 5,
-    },
+    iconText: { color: '#fff', marginLeft: 5 },
     label: {
         color: '#fff',
         fontWeight: 'bold',
@@ -235,10 +234,7 @@ import {
         borderRadius: 10,
         marginBottom: 15,
     },
-    picker: {
-        color: '#fff',
-        height: 45,
-    },
+    picker: { color: '#fff', height: 45 },
     saveButton: {
         backgroundColor: '#fff',
         paddingVertical: 15,
@@ -247,11 +243,7 @@ import {
         alignItems: 'center',
         marginTop: 10,
     },
-    saveButtonText: {
-        color: '#2e7d32',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
+    saveButtonText: { color: '#2e7d32', fontWeight: 'bold', fontSize: 16 },
     cancelButton: {
         borderColor: '#fff',
         borderWidth: 1.5,
@@ -261,9 +253,5 @@ import {
         alignItems: 'center',
         marginTop: 10,
     },
-    cancelButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
+    cancelButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 });
