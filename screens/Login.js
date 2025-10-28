@@ -131,19 +131,22 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
   const canSubmit = emailTrim.length > 0 && passwordTrim.length > 0;
 
   return (
-    <KeyboardAvoidingView 
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+              <KeyboardAvoidingView 
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0} // 👈 agregado
+          >
+
             <ImageBackground
             source={require('../assets/fondoPistacho.jpg')}
             style={{ width: '100%'}}
           >
-      <ScrollView 
-        contentContainerStyle={{ flexGrow: 1 }}
+            <ScrollView 
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} // 👈 agregado
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+
         <View style={styles.container}>
           
           {/* Encabezado con logo */}
