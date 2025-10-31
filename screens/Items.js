@@ -190,17 +190,14 @@ import {
             </View>
 
             <FlatList
-            data={filteredProducts}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            style={{ width: '100%', maxWidth: 800 }}
-            contentContainerStyle={{ paddingBottom: 40 }}
-            ListEmptyComponent={
-                <Text style={{ color: '#fff', textAlign: 'center', marginTop: 20 }}>
-                No hay productos para mostrar.
-                </Text>
-            }
-            />
+                data={filteredProducts}
+                keyExtractor={(item) => item.id}
+                renderItem={renderItem}
+                numColumns={2}
+                columnWrapperStyle={{ justifyContent: 'space-between' }}
+                contentContainerStyle={{ paddingBottom: 40 }}
+                />
+
         </View>
         </ImageBackground>
     );
@@ -213,16 +210,15 @@ import {
         height: '100%',
     },
     overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(29, 53, 19, 0.6)',
-        paddingTop: 60,
-        paddingHorizontal: 15,
-        alignItems: 'center',
+    flex: 1,
+    backgroundColor: 'rgba(29, 53, 19, 0.6)',
+    paddingTop: 60,
+    paddingHorizontal: 15,
     },
+
     header: {
         marginBottom: 20,
         width: '100%',
-        maxWidth: 800,
     },
     backButton: { alignSelf: 'flex-start', marginBottom: 10 },
     searchContainer: {
@@ -281,24 +277,30 @@ import {
         fontSize: 15,
     },
     card: {
+        flex: 1,
         backgroundColor: '#e6f7ca',
         borderColor: '#789C3B',
-        padding: 15,
+        padding: 10,
         borderRadius: 12,
-        marginBottom: 12,
-        flexDirection: 'row',
+        margin: 6,
         alignItems: 'center',
+        justifyContent: 'center',
         elevation: 4,
-    },
-    image: { width: 75, height: 75, borderRadius: 10, marginRight: 10 },
-    name: { fontSize: 17, fontWeight: 'bold', color: '#2e7d32' },
-    type: { color: '#555', fontStyle: 'italic', marginBottom: 3 },
-    detail: { color: '#333', fontSize: 14 },
-    actions: {
-        flexDirection: 'column',
-        marginLeft: 8,
-        justifyContent: 'space-between',
-        height: 70,
-    },
+        aspectRatio: 1, 
+        },
+        image: { width: 70, height: 70, borderRadius: 10, marginBottom: 8 },
+        name: { fontSize: 15, fontWeight: 'bold', color: '#2e7d32', textAlign: 'center' },
+        type: { color: '#555', fontStyle: 'italic', fontSize: 12, textAlign: 'center' },
+        detail: { color: '#333', fontSize: 12, textAlign: 'center' },
+        actions: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 10,
+        marginTop: 5,
+        },
+        iconButton: {
+        alignSelf: 'center',
+        },
+
     iconButton: { alignSelf: 'center' },
 });
