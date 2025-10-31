@@ -52,6 +52,6 @@ function Navigation() {
       </Stack.Navigator>
     </NavigationContainer>
   );
-} // 👈 esta llave faltaba
+} 
 
 export default Navigation;
