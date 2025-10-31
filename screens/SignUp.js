@@ -135,6 +135,13 @@ export default function SignUp({ navigation }) {
       style={styles.backgroundImage}
       >
       <View style={styles.container}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.navigate('Login')}
+        >
+          <FontAwesome name="arrow-left" size={20} color="#fff" />
+        </TouchableOpacity>
+
         <View style={styles.header}>
           <Text style={styles.headerText}>Sana-mente Natural</Text>
           <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
@@ -189,7 +196,7 @@ export default function SignUp({ navigation }) {
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#777" />
+              <FontAwesome name={showPassword ? "eye" : "eye-slash"} size={20} color="#777" />
             </TouchableOpacity>
           </View>
           {password && !validatePassword(password) && (
@@ -206,7 +213,7 @@ export default function SignUp({ navigation }) {
               secureTextEntry={!showConfirmPassword}
             />
             <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-              <FontAwesome name={showConfirmPassword ? "eye-slash" : "eye"} size={20} color="#777" />
+              <FontAwesome name={showConfirmPassword ? "eye" : "eye-slash"} size={20} color="#777" />
             </TouchableOpacity>
           </View>
           {confirmPassword && confirmPassword !== password && <Text style={styles.errorText}>Las contraseñas no coinciden</Text>}
@@ -260,6 +267,15 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(29, 53, 19, 0.55)",
     paddingTop: Platform.OS === 'web' ? 0 : 40,
     paddingBottom: Platform.OS === 'web' ? 0 : 40,
+  },
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'web' ? 20 : 50,
+    left: 20,
+    zIndex: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 10,
+    borderRadius: 8,
   },
   header: {
     width: '100%',

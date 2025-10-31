@@ -189,10 +189,10 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
                 secureTextEntry={!showPassword}
               />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <FontAwesome 
-                  name={showPassword ? "eye" : "eye-slash"} 
-                  size={20} 
-                  color="#777" 
+                <FontAwesome
+                  name={showPassword ? "eye" : "eye-slash"}
+                  size={20}
+                  color="#777"
                 />
               </TouchableOpacity>
             </View>
