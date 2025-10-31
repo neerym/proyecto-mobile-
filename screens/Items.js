@@ -3,7 +3,7 @@ import {
     View,
     Text,
     TextInput,
-    TouchableOpacity,
+    TouchableOpacity, // Se usa para el botón "Ver Más" y otros
     FlatList,
     StyleSheet,
     Image,
@@ -20,6 +20,7 @@ import {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedType, setSelectedType] = useState('Todos');
+    // Mantenemos la eliminación de [expandedItemId] ya que ahora usamos una pantalla completa.
 
     useEffect(() => {
         const ref = collection(db, 'productos');
@@ -70,6 +71,7 @@ import {
         );
     };
 
+
     const filteredProducts = products.filter((p) => {
         const matchName = (p.name || '')
         .toLowerCase()
@@ -80,41 +82,52 @@ import {
         return matchName && matchType;
     });
 
-    const renderItem = ({ item }) => (
-        <View style={styles.card}>
-        <Image
+    // ✅ renderItem modificado: la tarjeta ya no es el botón principal
+    const renderItem = ({ item }) => {
+        
+        return (
+        // Usamos View en lugar de TouchableOpacity para que solo el botón navegue
+        <View style={styles.card}> 
+            <Image
             source={
-            item.imageUrl
-                ? { uri: String(item.imageUrl) }
-                : require('../assets/default.png')
+                item.imageUrl
+                    ? { uri: String(item.imageUrl) }
+                    : require('../assets/default.png')
             }
             style={styles.image}
-        />
-        <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{item.name}</Text>
-            {item.tipo && <Text style={styles.type}>Tipo: {item.tipo}</Text>}
-            <Text style={styles.detail}>Cantidad: {item.quantity} u</Text>
-            <Text style={styles.detail}>Precio: ${item.price} c/u</Text>
-            {item.description ? (
-            <Text style={styles.detail}>Descripción: {item.description}</Text>
-            ) : null}
-        </View>
-        <View style={styles.actions}>
-            <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => navigation.navigate('EditProduct', { product: item })}
-            >
-            <FontAwesome name="pencil" size={20} color="#2e7d32" />
-            </TouchableOpacity>
-            <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => handleDelete(item.id, item.name)}
-            >
-            <FontAwesome name="trash" size={20} color="red" />
-            </TouchableOpacity>
-        </View>
-        </View>
-    );
+            />
+            <View style={{ flex: 1 }}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.detail}>Cantidad: {item.quantity} u</Text>
+
+                {/* 🆕 BOTÓN VER MÁS */}
+                <TouchableOpacity 
+                    style={styles.expandButton}
+                    // La navegación ahora va en este botón
+                    onPress={() => navigation.navigate('ProductDetail', { product: item })}
+                >
+                    <Text style={styles.expandButtonText}>Ver Más...</Text>
+                </TouchableOpacity>
+                
+            </View>
+
+            <View style={styles.actions}>
+                <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => navigation.navigate('EditProduct', { product: item })}
+                >
+                <FontAwesome name="pencil" size={20} color="#2e7d32" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => handleDelete(item.id, item.name)}
+                >
+                <FontAwesome name="trash" size={20} color="red" />
+                </TouchableOpacity>
+            </View>
+        </View> // Cerrar el View
+        );
+    };
 
     if (loading) {
         return (
@@ -277,18 +290,31 @@ import {
         borderRadius: 12,
         marginBottom: 12,
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         elevation: 4,
     },
     image: { width: 75, height: 75, borderRadius: 10, marginRight: 10 },
     name: { fontSize: 17, fontWeight: 'bold', color: '#2e7d32' },
     type: { color: '#555', fontStyle: 'italic', marginBottom: 3 },
     detail: { color: '#333', fontSize: 14 },
+    // 🆕 Estilos agregados o modificados para el botón "Ver Más"
+    expandButton: { 
+        marginTop: 5,
+        paddingVertical: 2,
+        alignSelf: 'flex-start',
+    },
+    expandButtonText: {
+        color: '#789C3B',
+        fontSize: 13,
+        fontWeight: 'bold',
+        textDecorationLine: 'underline',
+    },
+    // Eliminé los estilos "expandedDetails" porque la navegación se encarga del detalle.
     actions: {
         flexDirection: 'column',
         marginLeft: 8,
         justifyContent: 'space-between',
-        height: 70,
+        height: 75,
     },
     iconButton: { alignSelf: 'center' },
 });

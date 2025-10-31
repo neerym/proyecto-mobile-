@@ -3,8 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 // Firebase Auth para detectar cambios de sesión
-import { onAuthStateChanged } from 'firebase/auth';  
-import { auth } from '../src/config/firebaseConfig';  
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../src/config/firebaseConfig';
 
 // 📱 Screens principales de la app
 import Login from '../screens/Login';
@@ -15,6 +15,8 @@ import Items from '../screens/Items';
 import AddProduct from '../screens/AddProduct';
 import EditProduct from '../screens/EditProduct';
 import Profile from '../screens/Profile';
+// 🆕 Importar el nuevo componente de detalle
+import ProductDetailScreen from '../screens/ProductDetailScreen';; // Asegúrate de que esta ruta sea correcta
 
 // Creamos el stack de navegación
 const Stack = createStackNavigator();
@@ -49,9 +51,11 @@ function Navigation() {
         <Stack.Screen name="AddProduct" component={AddProduct} />
         <Stack.Screen name="EditProduct" component={EditProduct} />
         <Stack.Screen name="Profile" component={Profile} />
+        {/* 🆕 Nueva pantalla de detalle del producto */}
+        <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
-} // 👈 esta llave faltaba
+}
 
 export default Navigation;
