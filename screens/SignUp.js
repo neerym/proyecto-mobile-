@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 5,
   },
-  title: { fontSize: 35, fontWeight: 'bold', color: '#103900', marginBottom: 30  },
+  title: { fontSize: 35, fontWeight: 'bold', color: '#103900ff', marginBottom: 30  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',

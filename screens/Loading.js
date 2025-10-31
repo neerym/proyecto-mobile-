@@ -1,29 +1,29 @@
     import React, { useEffect } from 'react';
     import { View, Image, Text, StyleSheet, ImageBackground } from 'react-native';
 
-    // Pantalla de carga inicial (Splash Screen)
+    // Pantalla de carga inicial (eso del splash)
     export default function Loading({ navigation }) {
 
     useEffect(() => {
-        // Redirige a Home después de 3 segundos
+        // tiempo antes de desaparecer
         const timer = setTimeout(() => {
         navigation.replace('Home');
         }, 3000);
 
-        // Limpieza del temporizador 
+        // limpieza del temporizador 
         return () => clearTimeout(timer);
     }, [navigation]);
 
-    // Render de la pantalla de carga
+    // pantalla de carga
     return (
         <ImageBackground
-        source={require('../assets/fondoPistacho.jpg')} // Asegurate de que el archivo esté en /assets
+        source={require('../assets/fondoPistacho.jpg')} 
         style={styles.backgroundImage}
         >
         <View style={styles.overlay}>
             <Text style={styles.header}>Sana-mente Natural</Text>
             <Image
-            source={require('../assets/logoblanco.png')} // También debe estar en /assets
+            source={require('../assets/logoblanco.png')} 
             style={styles.logo}
             />
             <Text style={styles.slogan}>
@@ -48,7 +48,7 @@
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.35)', // Opcional: leve oscurecido
+        backgroundColor: 'rgba(0, 0, 0, 0.35)',
     },
     logo: {
         width: 150,

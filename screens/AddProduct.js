@@ -7,7 +7,7 @@ import {
     StyleSheet,
     Image,
     ImageBackground,
-    Alert,
+    Modal,
     ScrollView,
     KeyboardAvoidingView,
     Platform,
@@ -27,12 +27,23 @@ import {
     const [image, setImage] = useState(null);
     const [type, setType] = useState('otros');
 
+    // Modal
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState('info');
+    const [modalMessage, setModalMessage] = useState('');
+
+    const showModal = (type, message) => {
+        setModalType(type);
+        setModalMessage(message);
+        setModalVisible(true);
+    };
+
     // Elegir o sacar foto
     const pickImage = async (fromCamera = false) => {
         try {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
         if (!permission.granted) {
-            Alert.alert('Permiso requerido', 'Se necesita acceso a la cámara o galería.');
+            showModal('error', 'Se necesita acceso a la cámara o galería.');
             return;
         }
 
@@ -43,14 +54,14 @@ import {
         if (!result.canceled) setImage(result.assets[0].uri);
         } catch (error) {
         console.log('Error al seleccionar imagen:', error);
-        Alert.alert('Error', 'No se pudo seleccionar la imagen.');
+        showModal('error', 'No se pudo seleccionar la imagen.');
         }
     };
 
     // Guardar producto
     const handleAdd = async () => {
         if (!name || !quantity || !price) {
-        Alert.alert('Error', 'Nombre, cantidad y precio son obligatorios');
+        showModal('error', 'Nombre, cantidad y precio son obligatorios.');
         return;
         }
 
@@ -63,15 +74,15 @@ import {
             price: parseFloat(price),
             description,
             imageUrl,
-            tipo: type, // 👈 unificado con campo "tipo" como usa Items
+            tipo: type,
             createdAt: new Date(),
         });
 
-        Alert.alert('✅ Producto agregado', `${name} se guardó con éxito`);
-        navigation.goBack();
+        showModal('success', `${name} se guardó correctamente.`);
+        setTimeout(() => navigation.goBack(), 2000);
         } catch (error) {
         console.log('Error al agregar producto:', error);
-        Alert.alert('Error', 'No se pudo guardar el producto.');
+        showModal('error', 'No se pudo guardar el producto.');
         }
     };
 
@@ -168,6 +179,35 @@ import {
             </View>
             </ScrollView>
         </KeyboardAvoidingView>
+
+        {/* Modal */}
+        <Modal
+            visible={modalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setModalVisible(false)}
+        >
+            <View style={styles.modalOverlay}>
+            <View style={[
+                styles.modalContainer,
+                modalType === 'success' && styles.modalSuccess,
+                modalType === 'error' && styles.modalError,
+            ]}>
+                <FontAwesome
+                name={modalType === 'success' ? 'check-circle' : 'exclamation-circle'}
+                size={50}
+                color="#fff"
+                />
+                <Text style={styles.modalText}>{modalMessage}</Text>
+                <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setModalVisible(false)}
+                >
+                <Text style={styles.modalButtonText}>Aceptar</Text>
+                </TouchableOpacity>
+            </View>
+            </View>
+        </Modal>
         </ImageBackground>
     );
     }
@@ -269,4 +309,43 @@ import {
         marginBottom: 10,
     },
     cancelButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        width: '80%',
+        maxWidth: 400,
+        padding: 25,
+        borderRadius: 15,
+        alignItems: 'center',
+        elevation: 10,
+    },
+    modalSuccess: {
+        backgroundColor: '#4CAF50',
+    },
+    modalError: {
+        backgroundColor: '#d9534f',
+    },
+    modalText: {
+        color: '#fff',
+        fontSize: 16,
+        textAlign: 'center',
+        marginVertical: 15,
+        fontWeight: '500',
+    },
+    modalButton: {
+        backgroundColor: '#fff',
+        paddingVertical: 10,
+        paddingHorizontal: 30,
+        borderRadius: 10,
+        marginTop: 10,
+    },
+    modalButtonText: {
+        color: '#333',
+        fontWeight: 'bold',
+        fontSize: 15,
+    },
 });
