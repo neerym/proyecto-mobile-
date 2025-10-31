@@ -123,16 +123,16 @@ export default function SignUp({ navigation }) {
     
   return (
         <KeyboardAwareScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={styles.scrollContent}
         enableOnAndroid={true}
-        extraScrollHeight={70}   
+        extraScrollHeight={70}
         keyboardOpeningTime={0}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
       <ImageBackground
       source={require('../assets/fondoPistacho.jpg')}
-      style={{ width: '100%'}}
+      style={styles.backgroundImage}
       >
       <View style={styles.container}>
         <View style={styles.header}>
@@ -140,6 +140,7 @@ export default function SignUp({ navigation }) {
           <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
         </View>
 
+        <View style={styles.formWrapper}>
         <View style={styles.form}>
           <Text style={styles.title}>Crear cuenta</Text>
 
@@ -224,6 +225,7 @@ export default function SignUp({ navigation }) {
             </Text>
           </TouchableOpacity>
         </View>
+        </View>
 
         {toast.visible && (
           <Animated.View
@@ -249,37 +251,50 @@ export default function SignUp({ navigation }) {
 
 // Estilos
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: Platform.OS === 'web' ? 'center' : 'center',
+  },
+  container: {
+    minHeight: '100%',
+    backgroundColor: "rgba(29, 53, 19, 0.55)",
+    paddingTop: Platform.OS === 'web' ? 0 : 40,
+    paddingBottom: Platform.OS === 'web' ? 0 : 40,
+  },
   header: {
-  width: '100%',
-  alignItems: 'center',
-  paddingVertical: 40,
-  backgroundColor:"rgba(29, 53, 19, 0.55)" //COLOR OPACIDAD
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 20,
   },
   backgroundImage: {
-  flex: 1,
-  resizeMode: 'cover',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '100%'
-},
-  headerText: {
-  paddingBottom: 10,
-  fontSize: 22,
-  color: '#fff',
-  fontWeight: 'bold',
-  marginTop: 10,
-  textAlign: 'center',
-  textShadowColor: 'rgba(0, 0, 0, 0.4)', 
-  textShadowOffset: { width: 1, height: 1 },
-  textShadowRadius: 2,
-  letterSpacing: 1, 
-},
-  logo: { width: 100, height: 100 },
-  form: {
     flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  headerText: {
+    paddingBottom: 5,
+    fontSize: 22,
+    color: '#fff',
+    fontWeight: 'bold',
+    marginTop: 10,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+    letterSpacing: 1,
+  },
+  logo: { width: 80, height: 80 },
+  formWrapper: {
+    width: '100%',
     alignItems: 'center',
-    marginTop: -10,
+    paddingHorizontal: 15,
+    paddingBottom: 20,
+  },
+  form: {
+    width: '100%',
+    maxWidth: 600,
+    alignItems: 'center',
+    marginTop: Platform.OS === 'web' ? -30 : 10,
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 25,
@@ -289,7 +304,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 5,
   },
-  title: { fontSize: 35, fontWeight: 'bold', color: '#103900ff', marginBottom: 30  },
+  title: { fontSize: 28, fontWeight: 'bold', color: '#103900ff', marginBottom: 20  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -298,23 +313,23 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 12,
     width: '100%',
-    height: 50,
+    height: 48,
   },
   icon: { marginRight: 10 },
   input: { flex: 1, height: 40 },
-  errorText: { color: 'red', fontSize: 12, marginTop: -10, marginBottom: 10, alignSelf: 'flex-start' },
+  errorText: { color: 'red', fontSize: 12, marginTop: -8, marginBottom: 8, alignSelf: 'flex-start' },
   button: {
     backgroundColor: '#789C3B',
-    paddingVertical: 15,
+    paddingVertical: 12,
     borderRadius: 10,
     width: '100%',
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 25,
+    marginTop: 5,
+    marginBottom: 15,
   },
-  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   signUpText: { fontSize: 14, color: '#555', marginBottom: 10 },
   toast: {
     position: 'absolute',
