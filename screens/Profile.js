@@ -26,19 +26,21 @@ import {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [showSecurity, setShowSecurity] = useState(false); // 👈 NUEVO toggle
     const [avatar, setAvatar] = useState(user?.photoURL || '');
     const [loading, setLoading] = useState(false);
 
     // Validaciones
     const onlyText = (value) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value);
-    const validatePassword = (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(value);
+    const validatePassword = (value) =>
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(value);
 
     // Seleccionar imagen (galería o cámara)
     const pickImage = async (fromCamera = false) => {
         try {
         const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
         if (!permissionResult.granted) {
-            Alert.alert("Permiso requerido", "Se necesita acceso a la cámara o galería.");
+            Alert.alert('Permiso requerido', 'Se necesita acceso a la cámara o galería.');
             return;
         }
 
@@ -50,42 +52,42 @@ import {
             setAvatar(result.assets[0].uri);
         }
         } catch (error) {
-        console.log("Error al seleccionar imagen:", error);
-        Alert.alert("Error", "No se pudo seleccionar la imagen.");
+        console.log('Error al seleccionar imagen:', error);
+        Alert.alert('Error', 'No se pudo seleccionar la imagen.');
         }
     };
 
     const handleUpdateProfile = async () => {
         if (!name && !password && !avatar) {
-        Alert.alert("Aviso", "No hay cambios para guardar");
+        Alert.alert('Aviso', 'No hay cambios para guardar');
         return;
         }
 
         if (name && !onlyText(name)) {
-        Alert.alert("Error", "El nombre solo puede contener letras y espacios.");
+        Alert.alert('Error', 'El nombre solo puede contener letras y espacios.');
         return;
         }
 
         if (password && !validatePassword(password)) {
         Alert.alert(
-            "Contraseña no válida",
-            "Debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número."
+            'Contraseña no válida',
+            'Debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número.'
         );
         return;
         }
 
         if (password && password !== confirmPassword) {
-        Alert.alert("Error", "Las contraseñas no coinciden.");
+        Alert.alert('Error', 'Las contraseñas no coinciden.');
         return;
         }
 
         Alert.alert(
-        "Confirmar cambios",
-        "¿Desea guardar los cambios en su perfil?",
+        'Confirmar cambios',
+        '¿Desea guardar los cambios en su perfil?',
         [
-            { text: "Cancelar", style: "cancel" },
-            { 
-            text: "Guardar", 
+            { text: 'Cancelar', style: 'cancel' },
+            {
+            text: 'Guardar',
             onPress: async () => {
                 try {
                 setLoading(true);
@@ -102,14 +104,14 @@ import {
                 }
 
                 setLoading(false);
-                Alert.alert("Éxito", "Perfil actualizado correctamente");
+                Alert.alert('Éxito', 'Perfil actualizado correctamente');
                 } catch (error) {
                 setLoading(false);
-                console.log("Error al actualizar perfil:", error);
-                Alert.alert("Error", "No se pudo actualizar el perfil.");
+                console.log('Error al actualizar perfil:', error);
+                Alert.alert('Error', 'No se pudo actualizar el perfil.');
                 }
-            }
-            }
+            },
+            },
         ]
         );
     };
@@ -141,99 +143,113 @@ import {
         >
             <ScrollView contentContainerStyle={styles.scrollContent}>
             <View style={styles.overlay}>
-            {/* Avatar */}
-            <View style={styles.avatarContainer}>
-            {avatar ? (
-                <Image source={{ uri: avatar }} style={styles.avatar} />
-            ) : (
-                <FontAwesome name="user-circle" size={100} color="#fff" />
-            )}
+                {/* Avatar */}
+                <View style={styles.avatarContainer}>
+                {avatar ? (
+                    <Image source={{ uri: avatar }} style={styles.avatar} />
+                ) : (
+                    <FontAwesome name="user-circle" size={100} color="#fff" />
+                )}
 
-            <Text style={[styles.label, { alignSelf: 'center', textAlign: 'center' }]}>
-            Editar foto de perfil
-            </Text>
+                <Text style={[styles.label, { alignSelf: 'center', textAlign: 'center' }]}>
+                    Editar foto de perfil
+                </Text>
 
-            <View style={styles.photoButtons}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(false)}>
-                <FontAwesome name="image" size={20} color="#fff" />
-                <Text style={styles.iconText}>Galería</Text>
+                <View style={styles.photoButtons}>
+                    <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(false)}>
+                    <FontAwesome name="image" size={20} color="#fff" />
+                    <Text style={styles.iconText}>Galería</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(true)}>
+                    <FontAwesome name="camera" size={20} color="#fff" />
+                    <Text style={styles.iconText}>Cámara</Text>
+                    </TouchableOpacity>
+                </View>
+                </View>
+
+                {/* Nombre */}
+                <Text style={styles.label}>Usuario</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                value={name}
+                onChangeText={setName}
+                placeholderTextColor="#ddd"
+                />
+
+                {/* Email */}
+                <Text style={styles.label}>Correo electrónico</Text>
+                <View style={styles.disabledInput}>
+                <FontAwesome name="envelope" size={18} color="#666" style={{ marginRight: 8 }} />
+                <Text style={styles.disabledText}>{email}</Text>
+                </View>
+
+                {/* 🔒 SECCIÓN DE SEGURIDAD */}
+                <TouchableOpacity
+                style={styles.securityToggle}
+                onPress={() => setShowSecurity(!showSecurity)}
+                >
+                <FontAwesome name="lock" size={18} color="#fff" />
+                <Text style={styles.securityToggleText}>
+                    {showSecurity ? 'Ocultar opciones de seguridad' : 'Mostrar opciones de seguridad'}
+                </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(true)}>
-                <FontAwesome name="camera" size={20} color="#fff" />
-                <Text style={styles.iconText}>Cámara</Text>
+                {showSecurity && (
+                <View style={styles.securitySection}>
+                    <Text style={styles.securityLabel}>Nueva contraseña</Text>
+                    <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.inputPassword}
+                        placeholder="Nueva contraseña"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                        placeholderTextColor="#ddd"
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                        <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="#fff" />
+                    </TouchableOpacity>
+                    </View>
+
+                    <Text style={styles.securityLabel}>Confirmar nueva contraseña</Text>
+                    <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.inputPassword}
+                        placeholder="Confirmar contraseña"
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        secureTextEntry={!showPassword}
+                        placeholderTextColor="#ddd"
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                        <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="#fff" />
+                    </TouchableOpacity>
+                    </View>
+                </View>
+                )}
+
+                {/* Botones */}
+                <TouchableOpacity style={styles.saveButton} onPress={handleUpdateProfile}>
+                <Text style={styles.saveButtonText}>Guardar cambios</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
+                <Text style={styles.backButtonText}>Volver al Panel Principal</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
                 </TouchableOpacity>
             </View>
-            </View>
-
-            {/* Nombre */}
-            <Text style={styles.label}>Usuario</Text>
-            <TextInput
-            style={styles.input}
-            placeholder="Nombre"
-            value={name}
-            onChangeText={setName}
-            placeholderTextColor="#ddd"
-            />
-
-            {/* Email (solo lectura) */}
-            <Text style={styles.label}>Correo electrónico</Text>
-            <View style={styles.disabledInput}>
-            <FontAwesome name="envelope" size={18} color="#666" style={{ marginRight: 8 }} />
-            <Text style={styles.disabledText}>{email}</Text>
-            </View>
-
-            {/* Contraseñas */}
-            <Text style={styles.label}>¿Querés cambiar tu contraseña?</Text>
-
-                        <View style={styles.inputContainer}>
-            <TextInput
-                style={styles.inputPassword}
-                placeholder="Nueva contraseña"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                placeholderTextColor="#ddd"
-            />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#fff" />
-            </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputContainer}>
-            <TextInput
-                style={styles.inputPassword}
-                placeholder="Confirmar contraseña"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showPassword}
-                placeholderTextColor="#ddd"
-            />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#fff" />
-            </TouchableOpacity>
-            </View>
-
-            {/* Botones */}
-            <TouchableOpacity style={styles.saveButton} onPress={handleUpdateProfile}>
-            <Text style={styles.saveButtonText}>Guardar cambios</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
-            <Text style={styles.backButtonText}>Volver al Panel Principal</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
-            </TouchableOpacity>
-        </View>
             </ScrollView>
         </KeyboardAvoidingView>
         </ImageBackground>
     );
     }
 
-    // Estilos
+    // === ESTILOS ===
     const styles = StyleSheet.create({
     backgroundImage: {
         flex: 1,
@@ -356,10 +372,42 @@ import {
         marginBottom: 10,
     },
     logoutButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
-    loadingContainer: { 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: '#789C3B'
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#789C3B',
+    },
+
+    // === NUEVOS estilos de seguridad ===
+    securityToggle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderRadius: 10,
+        padding: 10,
+        marginTop: 15,
+        marginBottom: 10,
+        width: '100%',
+    },
+    securityToggleText: {
+        color: '#fff',
+        fontWeight: '600',
+        marginLeft: 8,
+        fontSize: 14,
+    },
+    securitySection: {
+        backgroundColor: 'rgba(0,0,0,0.1)',
+        borderRadius: 10,
+        padding: 10,
+        width: '100%',
+        marginBottom: 15,
+    },
+    securityLabel: {
+        color: '#fff',
+        fontWeight: '500',
+        marginBottom: 5,
+        fontSize: 12,
     },
 });

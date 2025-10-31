@@ -190,7 +190,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
               />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                 <FontAwesome 
-                  name={showPassword ? "eye-slash" : "eye"} 
+                  name={showPassword ? "eye" : "eye-slash"} 
                   size={20} 
                   color="#777" 
                 />
@@ -225,7 +225,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
             </TouchableOpacity>
 
 
-            {/* Botón de login con Google */}
+            {/* Botón de login con Google
             <TouchableOpacity
               style={styles.googleButton}
               disabled={!request}
@@ -234,7 +234,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
             >
               <GoogleIcon size={20} />
               <Text style={styles.googleText}>Ingresar con Google</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
 
             {/* Enlace para crear cuenta */}
