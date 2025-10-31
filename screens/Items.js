@@ -189,38 +189,31 @@ import {
             </TouchableOpacity>
             </View>
 
-        <FlatList
-        data={filteredProducts}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: 'space-between' }} // 🔹 columnas parejitas
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 10, paddingBottom: 60 }}
-        />
-
+            <FlatList
+            data={filteredProducts}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 40 }}
+            ListEmptyComponent={
+                <Text style={{ color: '#fff', textAlign: 'center', marginTop: 20 }}>
+                No hay productos para mostrar.
+                </Text>
+            }
+            />
         </View>
         </ImageBackground>
     );
     }
 
     const styles = StyleSheet.create({
-    background: {
-        flex: 1,
-        width: '100%',
-        height: '100%',
-    },
+    background: { flex: 1, resizeMode: 'cover' },
     overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(29, 53, 19, 0.6)',
-    paddingTop: 60,
-    paddingHorizontal: 15,
+        flex: 1,
+        backgroundColor: 'rgba(29, 53, 19, 0.6)',
+        paddingTop: 60,
+        paddingHorizontal: 15,
     },
-
-    header: {
-        marginBottom: 20,
-        width: '100%',
-    },
+    header: { marginBottom: 20 },
     backButton: { alignSelf: 'flex-start', marginBottom: 10 },
     searchContainer: {
         flexDirection: 'row',
@@ -278,15 +271,24 @@ import {
         fontSize: 15,
     },
     card: {
-    width: 170, // 📱 tamaño estable en todos los celulares
-    margin: 8,
-    borderRadius: 12,
-    backgroundColor: '#e6f7ca',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
-    elevation: 4,
-},
-
+        backgroundColor: '#e6f7ca',
+        borderColor: '#789C3B',
+        padding: 15,
+        borderRadius: 12,
+        marginBottom: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        elevation: 4,
+    },
+    image: { width: 75, height: 75, borderRadius: 10, marginRight: 10 },
+    name: { fontSize: 17, fontWeight: 'bold', color: '#2e7d32' },
+    type: { color: '#555', fontStyle: 'italic', marginBottom: 3 },
+    detail: { color: '#333', fontSize: 14 },
+    actions: {
+        flexDirection: 'column',
+        marginLeft: 8,
+        justifyContent: 'space-between',
+        height: 70,
+    },
     iconButton: { alignSelf: 'center' },
 });
