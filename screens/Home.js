@@ -198,29 +198,30 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  grid: {
+    grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 15,
-    width: '90%',
-    maxWidth: 600,
-    paddingBottom: 20,
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 400,  // mantiene el diseño compacto
+    paddingVertical: 10,
   },
   card: {
     backgroundColor: '#fff',
-    width: 160,
-    height: 160,
+    width: '42%',        // permite 2 por fila
+    aspectRatio: 1,      // mantiene cuadradas
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 8,
+    marginVertical: 8,
     elevation: 5,
     shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 4,
   },
+
   cardText: {
     color: '#2e7d32',
     fontWeight: 'bold',
