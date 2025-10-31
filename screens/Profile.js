@@ -6,19 +6,19 @@ import {
     TouchableOpacity,
     StyleSheet,
     Image,
-    Alert,
     ActivityIndicator,
     ImageBackground,
     ScrollView,
     KeyboardAvoidingView,
-    Platform
-    } from 'react-native';
-    import { FontAwesome } from '@expo/vector-icons';
-    import { auth } from '../src/config/firebaseConfig';
-    import { signOut, updatePassword, updateProfile } from 'firebase/auth';
-    import * as ImagePicker from 'expo-image-picker';
+    Platform,
+    Modal
+} from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
+import { auth } from '../src/config/firebaseConfig';
+import { signOut, updatePassword, updateProfile } from 'firebase/auth';
+import * as ImagePicker from 'expo-image-picker';
 
-    export default function Profile({ navigation }) {
+export default function Profile({ navigation }) {
     const user = auth.currentUser;
 
     const [name, setName] = useState(user?.displayName || '');
@@ -26,94 +26,94 @@ import {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [showSecurity, setShowSecurity] = useState(false); // 👈 NUEVO toggle
+    const [showSecurity, setShowSecurity] = useState(false);
     const [avatar, setAvatar] = useState(user?.photoURL || '');
     const [loading, setLoading] = useState(false);
 
-    // Validaciones
+    // Modales
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [modalSuccess, setModalSuccess] = useState(false);
+    const [confirmVisible, setConfirmVisible] = useState(false);
+
+    const showModal = (isSuccess, message) => {
+        setModalSuccess(isSuccess);
+        setModalMessage(message);
+        setModalVisible(true);
+    };
+
     const onlyText = (value) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value);
     const validatePassword = (value) =>
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(value);
 
-    // Seleccionar imagen (galería o cámara)
     const pickImage = async (fromCamera = false) => {
         try {
-        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-        if (!permissionResult.granted) {
-            Alert.alert('Permiso requerido', 'Se necesita acceso a la cámara o galería.');
-            return;
-        }
+            const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+            if (!permissionResult.granted) {
+                showModal(false, 'Se necesita acceso a la cámara o galería.');
+                return;
+            }
 
-        const result = fromCamera
-            ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 })
-            : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+            const result = fromCamera
+                ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 })
+                : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 });
 
-        if (!result.canceled) {
-            setAvatar(result.assets[0].uri);
-        }
+            if (!result.canceled) {
+                setAvatar(result.assets[0].uri);
+            }
         } catch (error) {
-        console.log('Error al seleccionar imagen:', error);
-        Alert.alert('Error', 'No se pudo seleccionar la imagen.');
+            console.log('Error al seleccionar imagen:', error);
+            showModal(false, 'No se pudo seleccionar la imagen.');
         }
     };
 
     const handleUpdateProfile = async () => {
         if (!name && !password && !avatar) {
-        Alert.alert('Aviso', 'No hay cambios para guardar');
-        return;
+            showModal(false, 'No hay cambios para guardar.');
+            return;
         }
 
         if (name && !onlyText(name)) {
-        Alert.alert('Error', 'El nombre solo puede contener letras y espacios.');
-        return;
+            showModal(false, 'El nombre solo puede contener letras y espacios.');
+            return;
         }
 
         if (password && !validatePassword(password)) {
-        Alert.alert(
-            'Contraseña no válida',
-            'Debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número.'
-        );
-        return;
+            showModal(false, 'La contraseña debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número.');
+            return;
         }
 
         if (password && password !== confirmPassword) {
-        Alert.alert('Error', 'Las contraseñas no coinciden.');
-        return;
+            showModal(false, 'Las contraseñas no coinciden.');
+            return;
         }
 
-        Alert.alert(
-        'Confirmar cambios',
-        '¿Desea guardar los cambios en su perfil?',
-        [
-            { text: 'Cancelar', style: 'cancel' },
-            {
-            text: 'Guardar',
-            onPress: async () => {
-                try {
-                setLoading(true);
+        setConfirmVisible(true);
+    };
 
-                if (name || avatar) {
-                    await updateProfile(user, {
+    const confirmUpdate = async () => {
+        try {
+            setConfirmVisible(false);
+            setLoading(true);
+
+            if (name || avatar) {
+                await updateProfile(user, {
                     displayName: name,
                     photoURL: avatar || null,
-                    });
-                }
+                });
+            }
 
-                if (password) {
-                    await updatePassword(user, password);
-                }
+            if (password) {
+                await updatePassword(user, password);
+            }
 
-                setLoading(false);
-                Alert.alert('Éxito', 'Perfil actualizado correctamente');
-                } catch (error) {
-                setLoading(false);
-                console.log('Error al actualizar perfil:', error);
-                Alert.alert('Error', 'No se pudo actualizar el perfil.');
-                }
-            },
-            },
-        ]
-        );
+            setLoading(false);
+            showModal(true, 'Perfil actualizado correctamente.');
+        } catch (error) {
+            setLoading(false);
+            console.log('Error al actualizar perfil:', error);
+            showModal(false, 'No se pudo actualizar el perfil.');
+        }
     };
 
     const handleLogout = async () => {
@@ -123,139 +123,168 @@ import {
 
     if (loading) {
         return (
-        <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#fff" />
-            <Text style={{ marginTop: 15, fontSize: 16, color: '#fff' }}>
-            Cargando perfil...
-            </Text>
-        </View>
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={{ marginTop: 15, fontSize: 16, color: '#fff' }}>
+                    Cargando perfil...
+                </Text>
+            </View>
         );
     }
 
     return (
-        <ImageBackground
-        source={require('../assets/fondoPistacho.jpg')}
-        style={styles.backgroundImage}
-        >
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-            <View style={styles.contentContainer}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => navigation.navigate('Home')}
-                >
-                    <FontAwesome name="arrow-left" size={20} color="#fff" />
-                </TouchableOpacity>
+        <ImageBackground source={require('../assets/fondoPistacho.jpg')} style={styles.backgroundImage}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                <ScrollView contentContainerStyle={styles.scrollContent}>
+                    <View style={styles.overlay}>
+                        {/* Avatar */}
+                        <View style={styles.avatarContainer}>
+                            {avatar ? (
+                                <Image source={{ uri: avatar }} style={styles.avatar} />
+                            ) : (
+                                <FontAwesome name="user-circle" size={100} color="#fff" />
+                            )}
 
-                <View style={styles.overlay}>
-                {/* Avatar */}
-                <View style={styles.avatarContainer}>
-                {avatar ? (
-                    <Image source={{ uri: avatar }} style={styles.avatar} />
-                ) : (
-                    <FontAwesome name="user-circle" size={100} color="#fff" />
-                )}
+                            <Text style={[styles.label, { alignSelf: 'center', textAlign: 'center' }]}>
+                                Editar foto de perfil
+                            </Text>
 
-                <Text style={[styles.label, { alignSelf: 'center', textAlign: 'center' }]}>
-                    Editar foto de perfil
-                </Text>
+                            <View style={styles.photoButtons}>
+                                <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(false)}>
+                                    <FontAwesome name="image" size={20} color="#fff" />
+                                    <Text style={styles.iconText}>Galería</Text>
+                                </TouchableOpacity>
 
-                <View style={styles.photoButtons}>
-                    <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(false)}>
-                    <FontAwesome name="image" size={20} color="#fff" />
-                    <Text style={styles.iconText}>Galería</Text>
-                    </TouchableOpacity>
+                                <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(true)}>
+                                    <FontAwesome name="camera" size={20} color="#fff" />
+                                    <Text style={styles.iconText}>Cámara</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
 
-                    <TouchableOpacity style={styles.iconButton} onPress={() => pickImage(true)}>
-                    <FontAwesome name="camera" size={20} color="#fff" />
-                    <Text style={styles.iconText}>Cámara</Text>
-                    </TouchableOpacity>
-                </View>
-                </View>
+                        {/* Nombre */}
+                        <Text style={styles.label}>Usuario</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nombre"
+                            value={name}
+                            onChangeText={setName}
+                            placeholderTextColor="#ddd"
+                        />
 
-                {/* Nombre */}
-                <Text style={styles.label}>Usuario</Text>
-                <TextInput
-                style={styles.input}
-                placeholder="Nombre"
-                value={name}
-                onChangeText={setName}
-                placeholderTextColor="#ddd"
-                />
+                        {/* Email */}
+                        <Text style={styles.label}>Correo electrónico</Text>
+                        <View style={styles.disabledInput}>
+                            <FontAwesome name="envelope" size={18} color="#666" style={{ marginRight: 8 }} />
+                            <Text style={styles.disabledText}>{email}</Text>
+                        </View>
 
-                {/* Email */}
-                <Text style={styles.label}>Correo electrónico</Text>
-                <View style={styles.disabledInput}>
-                <FontAwesome name="envelope" size={18} color="#666" style={{ marginRight: 8 }} />
-                <Text style={styles.disabledText}>{email}</Text>
-                </View>
+                        {/* SECCIÓN DE SEGURIDAD/contraseñas */}
+                        <TouchableOpacity
+                            style={styles.securityToggle}
+                            onPress={() => setShowSecurity(!showSecurity)}
+                        >
+                            <FontAwesome name="lock" size={18} color="#fff" />
+                            <Text style={styles.securityToggleText}>
+                                {showSecurity ? 'Ocultar opciones de seguridad' : 'Mostrar opciones de seguridad'}
+                            </Text>
+                        </TouchableOpacity>
 
-                {/* 🔒 SECCIÓN DE SEGURIDAD */}
-                <TouchableOpacity
-                style={styles.securityToggle}
-                onPress={() => setShowSecurity(!showSecurity)}
-                >
-                <FontAwesome name="lock" size={18} color="#fff" />
-                <Text style={styles.securityToggleText}>
-                    {showSecurity ? 'Ocultar opciones de seguridad' : 'Mostrar opciones de seguridad'}
-                </Text>
-                </TouchableOpacity>
+                        {showSecurity && (
+                            <View style={styles.securitySection}>
+                                <Text style={styles.securityLabel}>Nueva contraseña</Text>
+                                <View style={styles.inputContainer}>
+                                    <TextInput
+                                        style={styles.inputPassword}
+                                        placeholder="Nueva contraseña"
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry={!showPassword}
+                                        placeholderTextColor="#ddd"
+                                    />
+                                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                                        <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="#fff" />
+                                    </TouchableOpacity>
+                                </View>
 
-                {showSecurity && (
-                <View style={styles.securitySection}>
-                    <Text style={styles.securityLabel}>Nueva contraseña</Text>
-                    <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.inputPassword}
-                        placeholder="Nueva contraseña"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry={!showPassword}
-                        placeholderTextColor="#ddd"
-                    />
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                        <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="#fff" />
-                    </TouchableOpacity>
+                                <Text style={styles.securityLabel}>Confirmar nueva contraseña</Text>
+                                <View style={styles.inputContainer}>
+                                    <TextInput
+                                        style={styles.inputPassword}
+                                        placeholder="Confirmar contraseña"
+                                        value={confirmPassword}
+                                        onChangeText={setConfirmPassword}
+                                        secureTextEntry={!showPassword}
+                                        placeholderTextColor="#ddd"
+                                    />
+                                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                                        <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="#fff" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Botones */}
+                        <TouchableOpacity style={styles.saveButton} onPress={handleUpdateProfile}>
+                            <Text style={styles.saveButtonText}>Guardar cambios</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
+                            <Text style={styles.backButtonText}>Volver al Panel Principal</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                            <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
+                        </TouchableOpacity>
                     </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
 
-                    <Text style={styles.securityLabel}>Confirmar nueva contraseña</Text>
-                    <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.inputPassword}
-                        placeholder="Confirmar contraseña"
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                        secureTextEntry={!showPassword}
-                        placeholderTextColor="#ddd"
-                    />
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                        <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="#fff" />
-                    </TouchableOpacity>
+            {/* Modal de confirmación */}
+            <Modal visible={confirmVisible} transparent animationType="fade">
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContainer, { backgroundColor: '#d3733bff' }]}>
+                        <FontAwesome name="exclamation-circle" size={50} color="#fff" />
+                        <Text style={styles.modalText}>¿Desea guardar los cambios en su perfil?</Text>
+                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, { backgroundColor: '#ad4343ff' }]}
+                                onPress={confirmUpdate}
+                            >
+                                <Text style={[styles.modalButtonText, { color: '#fff' }]}>Sí, guardar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalButton, { backgroundColor: '#fff' }]}
+                                onPress={() => setConfirmVisible(false)}
+                            >
+                                <Text style={styles.modalButtonText}>Cancelar</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
-                )}
+            </Modal>
 
-                {/* Botones */}
-                <TouchableOpacity style={styles.saveButton} onPress={handleUpdateProfile}>
-                <Text style={styles.saveButtonText}>Guardar cambios</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
-                </TouchableOpacity>
+            {/* Modal de resultado */}
+            <Modal visible={modalVisible} transparent animationType="fade">
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContainer, modalSuccess ? styles.modalSuccess : styles.modalError]}>
+                        <FontAwesome
+                            name={modalSuccess ? 'check-circle' : 'exclamation-circle'}
+                            size={50}
+                            color="#fff"
+                        />
+                        <Text style={styles.modalText}>{modalMessage}</Text>
+                        <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+                            <Text style={styles.modalButtonText}>Aceptar</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
+            </Modal>
         </ImageBackground>
     );
-    }
+}
 
-    // === ESTILOS ===
-    const styles = StyleSheet.create({
+const styles = StyleSheet.create({
     backgroundImage: {
         flex: 1,
         width: '100%',
@@ -387,8 +416,6 @@ import {
         alignItems: 'center',
         backgroundColor: '#789C3B',
     },
-
-    // === NUEVOS estilos de seguridad ===
     securityToggle: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -418,5 +445,40 @@ import {
         fontWeight: '500',
         marginBottom: 5,
         fontSize: 12,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        width: '80%',
+        maxWidth: 400,
+        padding: 25,
+        borderRadius: 15,
+        alignItems: 'center',
+        elevation: 10,
+    },
+    modalSuccess: { backgroundColor: '#4CAF50' },
+    modalError: { backgroundColor: '#d9534f' },
+    modalText: {
+        color: '#fff',
+        fontSize: 16,
+        textAlign: 'center',
+        marginVertical: 15,
+        fontWeight: '500',
+    },
+    modalButton: {
+        backgroundColor: '#fff',
+        paddingVertical: 10,
+        paddingHorizontal: 30,
+        borderRadius: 10,
+        marginTop: 10,
+    },
+    modalButtonText: {
+        color: '#534a4aff',
+        fontWeight: 'bold',
+        fontSize: 15,
     },
 });

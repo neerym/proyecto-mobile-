@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 40,
     paddingBottom: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)', // leve velo blanco
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
   logo: {
     width: 80,
@@ -204,13 +204,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     alignItems: 'center',
     width: '100%',
-    maxWidth: 400,  // mantiene el diseño compacto
+    maxWidth: 400,  
     paddingVertical: 10,
   },
   card: {
     backgroundColor: '#fff',
-    width: '42%',        // permite 2 por fila
-    aspectRatio: 1,      // mantiene cuadradas
+    width: '42%',        
+    aspectRatio: 1,      
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
