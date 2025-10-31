@@ -132,15 +132,15 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
   const canSubmit = emailTrim.length > 0 && passwordTrim.length > 0;
 
   return (
-              <KeyboardAvoidingView 
-            style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0} // 👈 agregado
-          >
-
             <ImageBackground
             source={require('../assets/fondoPistacho.jpg')}
             style={styles.backgroundImage}
+            resizeMode="cover"
+          >
+              <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={0}
           >
             <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -251,8 +251,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
           </View>
         </View>
       </ScrollView>
-      </ImageBackground>
-      
+      </KeyboardAvoidingView>
 
       {/* Toast flotante */}
       {showToast && (
@@ -261,8 +260,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
           <Text style={styles.toastText}>{toastMessage}</Text>
         </Animated.View>
       )}
-    </KeyboardAvoidingView>
-    
+      </ImageBackground>
   );
 }
 
@@ -270,6 +268,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
+    minHeight: '100%',
     justifyContent: Platform.OS === 'web' ? 'center' : 'center',
   },
   container: {
