@@ -179,7 +179,7 @@ export default function Profile({ navigation }) {
                             <Text style={styles.disabledText}>{email}</Text>
                         </View>
 
-                        {/* SECCIÓN DE SEGURIDAD/contrasñeas */}
+                        {/* SECCIÓN DE SEGURIDAD/contraseñas */}
                         <TouchableOpacity
                             style={styles.securityToggle}
                             onPress={() => setShowSecurity(!showSecurity)}

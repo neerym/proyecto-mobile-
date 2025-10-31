@@ -33,7 +33,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 // --- CONFIGURACIÓN GOOGLE ---
 const redirectUri = AuthSession.makeRedirectUri({
-  useProxy: true, // 👈 evita los redirect locales exp://
+  useProxy: true, 
 });
 
 const [request, response, promptAsync] = Google.useAuthRequest({
