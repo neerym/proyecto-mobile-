@@ -117,7 +117,7 @@ export default function Home({ navigation }) {
             <Text style={styles.cardText}>Perfil</Text>
           </TouchableOpacity>
 
-          {/* Botón de logout también dentro del grid (opcional) */}
+          {/* Botón logout */}
           <TouchableOpacity 
             style={[styles.card, { backgroundColor: '#ffe6e6' }]} 
             onPress={handleLogout}
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     paddingTop: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)', // leve velo blanco
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', // opacidad
   },
   logo: {
     width: 100,

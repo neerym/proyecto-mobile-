@@ -30,9 +30,9 @@ export default function Login({ navigation }) {
 
 WebBrowser.maybeCompleteAuthSession();  
 
-// --- CONFIGURACIÓN GOOGLE ---
+// CONF GOOGLEE
 const redirectUri = AuthSession.makeRedirectUri({
-  useProxy: true, // 👈 evita los redirect locales exp://
+  useProxy: true, 
 });
 
 const [request, response, promptAsync] = Google.useAuthRequest({
@@ -44,7 +44,7 @@ const [request, response, promptAsync] = Google.useAuthRequest({
   scopes: ["profile", "email"],
 });
 
-// --- EFECTO DE LOGIN ---
+// EFECTO LOGIN
 useEffect(() => {
   if (response?.type === "success") {
     const { authentication } = response;
@@ -59,7 +59,7 @@ useEffect(() => {
   }
 }, [response]);
 
-  // toast con mensaje de error
+  // mensaje de error
   const showError = (message) => {
     setToastMessage(message);
     setShowToast(true);
@@ -78,9 +78,9 @@ useEffect(() => {
     });
   };
 
-  // Login normal con email y contraseña
+  // Login normal
   const handleLogin = async () => {
-  // Presencia con trim
+  // si pusiste mal:
   if (!emailTrim || !passwordTrim) {
     showError("Por favor ingrese ambos campos.");
     return;
@@ -99,7 +99,7 @@ useEffect(() => {
     // evita enumeración de usuarios
     let errorMessage = "Credenciales inválidas. Por favor, verifique su correo y contraseña.";
 
-    // Excepciones permitidas
+    // excepciones 
     if (error.code === 'auth/network-request-failed') {
       errorMessage = "Error de conexión, por favor intenta más tarde.";
     } else if (error.code === 'auth/too-many-requests') {
@@ -110,7 +110,7 @@ useEffect(() => {
   }
 };
 
-    // Envío de correo para restablecer contraseña
+    // envío de correo para restablecer contraseña
     const handleForgotPassword = async () => {
       if (!email) {
         showError("Por favor ingresa tu correo electrónico.");
@@ -122,7 +122,7 @@ useEffect(() => {
     }
   
 
-// Mostrar siempre el mismo mensaje
+// mostrar siempre el mismo mensaje
 showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contraseña. Revisá tu correo o la carpeta de spam.");
   };
 
@@ -149,7 +149,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
 
         <View style={styles.container}>
           
-          {/* Encabezado con logo */}
+          {/* encabezado con logo */}
           
           <View style={styles.header}>
             <Text style={styles.headerText}>Sana-mente Natural</Text>
@@ -157,11 +157,11 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
           </View>
 
 
-          {/* Formulario principal */}
+          {/* formulario principal */}
           <View style={styles.form}>
             <Text style={styles.title}>Iniciar sesión</Text>
 
-            {/* Campo Email */}
+            {/* campo Email */}
             <View style={styles.inputContainer}>
               <FontAwesome name="envelope" size={20} color="#777" style={styles.icon} />
               <TextInput
@@ -177,7 +177,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
               />
             </View>
 
-            {/* Campo Contraseña */}
+            {/* Contraseña */}
             <View style={styles.inputContainer}>
               <FontAwesome name="lock" size={20} color="#777" style={styles.icon} />
               <TextInput
@@ -201,12 +201,12 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
             <TouchableOpacity
               onPress={handleForgotPassword}
               style={{ width: "100%" }}
-              disabled={loadingReset} // desactiva mientras está cargando
+              disabled={loadingReset}
             >
               <Text
                 style={[
                   styles.forgotPassword,
-                  loadingReset && { opacity: 0.5 }, //  gris temporal
+                  loadingReset && { opacity: 0.5 },
                 ]}
               >
                 ¿Olvidaste tu contraseña?
@@ -214,7 +214,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
             </TouchableOpacity>
 
 
-            {/* Botón para ingresar */}
+            {/* Btn para ingresar */}
             <TouchableOpacity 
               style={[styles.button, !canSubmit && styles.buttonDisabled]} 
               onPress={handleLogin}
@@ -224,7 +224,7 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
             </TouchableOpacity>
 
 
-            {/* Botón de login con Google */}
+            {/* Btn de login con Google */}
             <TouchableOpacity
               style={styles.googleButton}
               disabled={!request}
