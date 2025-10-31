@@ -116,7 +116,7 @@ import {
                 </View>
 
                 {/* Campos */}
-                <Text style={styles.label}>Nombre del producto</Text>
+                <Text style={styles.label}>*Nombre del producto</Text>
                 <TextInput
                 style={styles.input}
                 placeholder="Ej: Yerba orgánica"
@@ -134,7 +134,7 @@ import {
                 placeholderTextColor="#ddd"
                 />
 
-                <Text style={styles.label}>Cantidad en stock</Text>
+                <Text style={styles.label}>*Cantidad en stock</Text>
                 <TextInput
                 style={styles.input}
                 placeholder="Ej: 10"
@@ -144,7 +144,7 @@ import {
                 placeholderTextColor="#ddd"
                 />
 
-                <Text style={styles.label}>Precio unitario</Text>
+                <Text style={styles.label}>*Precio unitario</Text>
                 <TextInput
                 style={styles.input}
                 placeholder="Ej: 1500"
