@@ -1,62 +1,66 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Image, 
-  KeyboardAvoidingView, 
-  ScrollView, 
-  Platform, 
-  Animated 
-} from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet, Image,
+  KeyboardAvoidingView, ScrollView, Platform, Animated, ImageBackground
+} from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
 
-import { 
-  signInWithEmailAndPassword, 
-  sendPasswordResetEmail, 
-  GoogleAuthProvider, 
-  signInWithCredential 
-} from 'firebase/auth';
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithCredential,
+} from "firebase/auth";
 
 import * as WebBrowser from "expo-web-browser";
+import * as AuthSession from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
-import { auth } from '../src/config/firebaseConfig';
-
-WebBrowser.maybeCompleteAuthSession();
+import { auth } from "../src/config/firebaseConfig";
+import GoogleIcon from "../components/GoogleIcon";
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loadingReset, setLoadingReset] = useState(false);
 
   // Control del toast
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
-  // Configuración para login con Google
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com", 
-    expoClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",   
-    webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",    
-  });
+WebBrowser.maybeCompleteAuthSession();  
 
-  // Login con Google
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { authentication } = response;
-      if (authentication?.idToken) {
-        const credential = GoogleAuthProvider.credential(authentication.idToken);
-        signInWithCredential(auth, credential)
-          .then(() => navigation.reset({ index: 0, routes: [{ name: 'Loading' }] }))
-          .catch(() => showError("No se pudo iniciar sesión con Google."));
-      }
+// --- CONFIGURACIÓN GOOGLE ---
+const redirectUri = AuthSession.makeRedirectUri({
+  useProxy: true, // 👈 evita los redirect locales exp://
+});
+
+const [request, response, promptAsync] = Google.useAuthRequest({
+  expoClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
+  androidClientId: "966224331213-mnvu2va2ogr0aul6c0pmkdpe816shi1t.apps.googleusercontent.com",
+  webClientId: "966224331213-g9pkfmt0jsv8aj5fclc79trs1hbuchaq.apps.googleusercontent.com",
+  redirectUri,
+  responseType: "id_token",
+  scopes: ["profile", "email"],
+});
+
+// --- EFECTO DE LOGIN ---
+useEffect(() => {
+  if (response?.type === "success") {
+    const { authentication } = response;
+    if (authentication?.idToken) {
+      const credential = GoogleAuthProvider.credential(authentication.idToken);
+      signInWithCredential(auth, credential)
+        .then(() =>
+          navigation.reset({ index: 0, routes: [{ name: "Loading" }] })
+        )
+        .catch(() => showError("No se pudo iniciar sesión con Google."));
     }
-  }, [response]);
+  }
+}, [response]);
 
-  // Mostrar toast con mensaje de error
+  // toast con mensaje de error
   const showError = (message) => {
     setToastMessage(message);
     setShowToast(true);
@@ -77,79 +81,83 @@ export default function Login({ navigation }) {
 
   // Login normal con email y contraseña
   const handleLogin = async () => {
-    if (!email || !password) {
-      showError("Por favor ingrese ambos campos.");
-      return;
+  // Presencia con trim
+  if (!emailTrim || !passwordTrim) {
+    showError("Por favor ingrese ambos campos.");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailTrim)) {
+    showError("Por favor, ingrese un correo válido.");
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, emailTrim, passwordTrim);
+    navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
+  } catch (error) {
+    // evita enumeración de usuarios
+    let errorMessage = "Credenciales inválidas. Por favor, verifique su correo y contraseña.";
+
+    // Excepciones permitidas
+    if (error.code === 'auth/network-request-failed') {
+      errorMessage = "Error de conexión, por favor intenta más tarde.";
+    } else if (error.code === 'auth/too-many-requests') {
+      errorMessage = "Demasiados intentos. Por favor, intenta más tarde.";
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      showError("El formato del correo electrónico no es válido.");
-      return;
-    }
+    showError(errorMessage);
+  }
+};
 
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigation.reset({ index: 0, routes: [{ name: 'Loading' }] });
-    } catch (error) {
-      let errorMessage = "Hubo un problema al iniciar sesión.";
-      switch (error.code) {
-        case 'auth/invalid-email':
-          errorMessage = "El formato del correo electrónico no es válido.";
-          break;
-        case 'auth/wrong-password':
-          errorMessage = "La contraseña es incorrecta.";
-          break;
-        case 'auth/user-not-found':
-          errorMessage = "No se encontró un usuario con este correo.";
-          break;
-        case 'auth/network-request-failed':
-          errorMessage = "Error de conexión, por favor intenta más tarde.";
-          break;
+    // Envío de correo para restablecer contraseña
+    const handleForgotPassword = async () => {
+      if (!email) {
+        showError("Por favor ingresa tu correo electrónico.");
+        return;
       }
-      showError(errorMessage);
+        try {
+        await sendPasswordResetEmail(auth, email);
+        } catch (error) {
     }
+  
+
+// Mostrar siempre el mismo mensaje
+showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contraseña. Revisá tu correo o la carpeta de spam.");
   };
 
-  // Envío de correo para restablecer contraseña
-  const handleForgotPassword = async () => {
-    if (!email) {
-      showError("Por favor ingresa tu correo electrónico.");
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      showError("Te enviamos un enlace para restablecer tu contraseña.");
-    } catch (error) {
-      let errorMessage = "No se pudo enviar el email de recuperación.";
-      if (error.code === "auth/user-not-found") {
-        errorMessage = "No existe un usuario con ese correo.";
-      } else if (error.code === "auth/invalid-email") {
-        errorMessage = "El correo ingresado no es válido.";
-      }
-      showError(errorMessage);
-    }
-  };
+  const emailTrim = email.trim();
+  const passwordTrim = password.trim();
+  const canSubmit = emailTrim.length > 0 && passwordTrim.length > 0;
 
   return (
-    <KeyboardAvoidingView 
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView 
-        contentContainerStyle={{ flexGrow: 1 }}
+            <ImageBackground
+            source={require('../assets/fondoPistacho.jpg')}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+          >
+              <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={0}
+          >
+            <ScrollView
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+
         <View style={styles.container}>
-          
+
           {/* Encabezado con logo */}
+
           <View style={styles.header}>
             <Text style={styles.headerText}>Sana-mente Natural</Text>
             <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
-            
           </View>
 
+          <View style={styles.formWrapper}>
           {/* Formulario principal */}
           <View style={styles.form}>
             <Text style={styles.title}>Iniciar sesión</Text>
@@ -188,26 +196,46 @@ export default function Login({ navigation }) {
                 />
               </TouchableOpacity>
             </View>
+            
 
             {/* Recuperar contraseña */}
-            <TouchableOpacity onPress={handleForgotPassword} style={{ width: "100%" }}>
-              <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
+            <TouchableOpacity
+              onPress={handleForgotPassword}
+              style={{ width: "100%" }}
+              disabled={loadingReset} // desactiva mientras está cargando
+            >
+              <Text
+                style={[
+                  styles.forgotPassword,
+                  loadingReset && { opacity: 0.5 }, //  gris temporal
+                ]}
+              >
+                ¿Olvidaste tu contraseña?
+              </Text>
             </TouchableOpacity>
 
+
             {/* Botón para ingresar */}
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <TouchableOpacity 
+              style={[styles.button, !canSubmit && styles.buttonDisabled]} 
+              onPress={handleLogin}
+              disabled={!canSubmit}
+            >
               <Text style={styles.buttonText}>Ingresar</Text>
             </TouchableOpacity>
 
-            {/* Botón de login con Google (desactivado) */}
-              <TouchableOpacity 
-                style={styles.googleButtonDisabled}
-                onPress={() => showError("Próximamente: inicio con Google")}
-                activeOpacity={0.7}
-              >
-                <FontAwesome name="google" size={20} color="#999" />
-                <Text style={styles.googleTextDisabled}>Ingresar con Google</Text>
-              </TouchableOpacity>
+
+            {/* Botón de login con Google */}
+            <TouchableOpacity
+              style={styles.googleButton}
+              disabled={!request}
+              onPress={() => promptAsync()}
+              activeOpacity={0.8}
+            >
+              <GoogleIcon size={20} />
+              <Text style={styles.googleText}>Ingresar con Google</Text>
+            </TouchableOpacity>
+
 
             {/* Enlace para crear cuenta */}
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
@@ -217,11 +245,13 @@ export default function Login({ navigation }) {
             </TouchableOpacity>
 
             {/* Frase de la app y pie */}
-            <Text style={styles.footer}>© 2025 Sana-mente Natural</Text> 
+            <Text style={styles.footer}>© 2025 Sana-mente Natural</Text>
             <Text style={styles.footer}> Porque comer bien es la base de sentirse mejor</Text>
+          </View>
           </View>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Toast flotante */}
       {showToast && (
@@ -230,18 +260,32 @@ export default function Login({ navigation }) {
           <Text style={styles.toastText}>{toastMessage}</Text>
         </Animated.View>
       )}
-    </KeyboardAvoidingView>
+      </ImageBackground>
   );
 }
 
 // Estilos
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f6fa' },
+  scrollContent: {
+    flexGrow: 1,
+    minHeight: '100%',
+    justifyContent: Platform.OS === 'web' ? 'center' : 'center',
+  },
+  container: {
+    minHeight: '100%',
+    backgroundColor: "rgba(29, 53, 19, 0.55)",
+    paddingTop: Platform.OS === 'web' ? 0 : 40,
+    paddingBottom: Platform.OS === 'web' ? 0 : 40,
+  },
   header: {
-    backgroundColor: '#789C3B',
     width: '100%',
     alignItems: 'center',
-    paddingVertical: 50,
+    paddingVertical: 30,
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   headerText: {
   fontSize: 22,
@@ -249,26 +293,34 @@ const styles = StyleSheet.create({
   fontWeight: 'bold',
   marginTop: 10,
   textAlign: 'center',
-  textShadowColor: 'rgba(0, 0, 0, 0.4)',  // sombra sutil
+  textShadowColor: 'rgba(0, 0, 0, 0.4)',  
   textShadowOffset: { width: 1, height: 1 },
   textShadowRadius: 2,
-  letterSpacing: 1, // opcional, separa un poco las letras
+  letterSpacing: 1, 
 },
-  logo: { width: 180, height: 180 },
-  form: {
-    flex: 1,
+  logo: { width: 140, height: 140 },
+  formWrapper: {
+    width: '100%',
     alignItems: 'center',
-    marginTop: -75,
+    paddingHorizontal: 15,
+    paddingBottom: 20,
+  },
+  form: {
+    width: '100%',
+    maxWidth: 600,
+    alignItems: 'center',
+    marginTop: -40,
     backgroundColor: '#fff',
     borderRadius: 20,
-    padding: 30,
-    paddingTop: 20, 
+    padding: 25,
+    paddingTop: 25,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
-    elevation: 5},
-  title: { fontSize: 35, fontWeight: 'bold', color: '#103900', marginBottom: 30  },
+    elevation: 5,
+  },
+  title: { fontSize: 28, fontWeight: 'bold', color: 'rgba(16, 57, 0, 1)', marginBottom: 20  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -277,9 +329,9 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     paddingHorizontal: 10,
-    marginBottom: 25,
+    marginBottom: 15,
+    height: 48,
     width: '100%',
-    height: 50,
   },
   icon: { marginRight: 10 },
   input: { flex: 1, height: 40 },
@@ -287,18 +339,18 @@ const styles = StyleSheet.create({
     color: '#789C3B',
     fontSize: 13,
     textAlign: "right",
-    marginBottom: 30,
-    marginTop: -15
+    marginBottom: 20,
+    marginTop: -8
   },
   button: {
     backgroundColor: '#789C3B',
-    paddingVertical: 15,
+    paddingVertical: 12,
     borderRadius: 10,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
   },
-  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -308,10 +360,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     justifyContent: 'center',
     width: '100%',
-    marginBottom: 25,
+    marginBottom: 18,
   },
-  googleText: { marginLeft: 10, fontSize: 16, color: '#333' },
-  signUpText: { fontSize: 14, color: '#555', marginBottom: 20 },
+  googleText: { marginLeft: 10, fontSize: 15, color: '#333' },
+  signUpText: { fontSize: 14, color: '#555', marginBottom: 15 },
   footer: { fontSize: 12, color: '#aaa', textAlign: 'center', marginTop: 10 },
   toast: {
     
@@ -335,12 +387,12 @@ const styles = StyleSheet.create({
     textAlign: 'center' 
   },
 
-  // 👉 estilos del botón Google desactivado
+  //  estilos botón Google
   googleButtonDisabled: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#e0e0e0', // gris claro
+    backgroundColor: '#e0e0e0',
     borderRadius: 10,
     paddingVertical: 12,
     width: '100%',
@@ -352,4 +404,9 @@ const styles = StyleSheet.create({
     color: '#777',
     fontWeight: 'bold'
   },
+
+  buttonDisabled: {
+  opacity: 0.5
+},
+
 });

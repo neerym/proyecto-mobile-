@@ -7,10 +7,11 @@ import {
   StyleSheet, 
   Image, 
   Platform, 
-  Animated 
+  Animated,
+  ImageBackground
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; // ✅ nuevo import
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'; 
 import { auth, db } from '../src/config/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -48,7 +49,7 @@ export default function SignUp({ navigation }) {
   const handleSignUp = async () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       showToast("Todos los campos son obligatorios", "error");
-      return;
+        return;
     }
 
     if (!onlyText(firstName) || !onlyText(lastName)) {
@@ -82,7 +83,7 @@ export default function SignUp({ navigation }) {
         createdAt: new Date()
       });
 
-      showToast("✅ Registro exitoso", "success");
+      showToast("Registro exitoso", "success");
 
       setTimeout(() => {
         navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
@@ -108,21 +109,38 @@ export default function SignUp({ navigation }) {
       showToast(`❌ ${errorMessage}`, "error");
     }
   };
-
+  const isFormValid =
+    onlyText(firstName) &&
+    onlyText(lastName) &&
+    validateEmail(email) &&
+    validatePassword(password) &&
+    password === confirmPassword &&
+    firstName !== '' &&
+    lastName !== '' &&
+    email !== '' &&
+    password !== '' &&
+    confirmPassword !== '';
+    
   return (
-          <KeyboardAwareScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
+        <KeyboardAwareScrollView
+        contentContainerStyle={styles.scrollContent}
         enableOnAndroid={true}
-        extraScrollHeight={70}   
+        extraScrollHeight={70}
         keyboardOpeningTime={0}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+      <ImageBackground
+      source={require('../assets/fondoPistacho.jpg')}
+      style={styles.backgroundImage}
+      >
       <View style={styles.container}>
         <View style={styles.header}>
-          <Image source={require('../assets/logo.png')} style={styles.logo} />
+          <Text style={styles.headerText}>Sana-mente Natural</Text>
+          <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
         </View>
 
+        <View style={styles.formWrapper}>
         <View style={styles.form}>
           <Text style={styles.title}>Crear cuenta</Text>
 
@@ -193,7 +211,11 @@ export default function SignUp({ navigation }) {
           </View>
           {confirmPassword && confirmPassword !== password && <Text style={styles.errorText}>Las contraseñas no coinciden</Text>}
 
-          <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+          <TouchableOpacity
+            style={[styles.button, !isFormValid && { opacity: 0.5 }]}
+            onPress={handleSignUp}
+            disabled={!isFormValid}
+          >
             <Text style={styles.buttonText}>Registrarse</Text>
           </TouchableOpacity>
 
@@ -202,6 +224,7 @@ export default function SignUp({ navigation }) {
               ¿Ya tenés cuenta? <Text style={{ color: '#789C3B', fontWeight: 'bold' }}>Iniciá sesión</Text>
             </Text>
           </TouchableOpacity>
+        </View>
         </View>
 
         {toast.visible && (
@@ -221,28 +244,58 @@ export default function SignUp({ navigation }) {
           </Animated.View>
         )}
       </View>
+      </ImageBackground>
     </KeyboardAwareScrollView>
   );
 }
 
 // Estilos
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f6fa' },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: Platform.OS === 'web' ? 'center' : 'center',
+  },
+  container: {
+    minHeight: '100%',
+    backgroundColor: "rgba(29, 53, 19, 0.55)",
+    paddingTop: Platform.OS === 'web' ? 0 : 40,
+    paddingBottom: Platform.OS === 'web' ? 0 : 40,
+  },
   header: {
-    backgroundColor: '#789C3B',
     width: '100%',
     alignItems: 'center',
-    paddingVertical: 40,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingVertical: 20,
   },
-  logo: { width: 100, height: 100 },
-  form: {
+  backgroundImage: {
     flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  headerText: {
+    paddingBottom: 5,
+    fontSize: 22,
+    color: '#fff',
+    fontWeight: 'bold',
+    marginTop: 10,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+    letterSpacing: 1,
+  },
+  logo: { width: 80, height: 80 },
+  formWrapper: {
+    width: '100%',
     alignItems: 'center',
-    marginTop: -10,
+    paddingHorizontal: 15,
+    paddingBottom: 20,
+  },
+  form: {
+    width: '100%',
+    maxWidth: 600,
+    alignItems: 'center',
+    marginTop: Platform.OS === 'web' ? -30 : 10,
     backgroundColor: '#fff',
-    marginHorizontal: 20,
     borderRadius: 20,
     padding: 25,
     shadowColor: '#000',
@@ -251,7 +304,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 5,
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2e7d32', marginBottom: 25 },
+  title: { fontSize: 28, fontWeight: 'bold', color: '#103900ff', marginBottom: 20  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -260,23 +313,23 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 12,
     width: '100%',
-    height: 50,
+    height: 48,
   },
   icon: { marginRight: 10 },
   input: { flex: 1, height: 40 },
-  errorText: { color: 'red', fontSize: 12, marginTop: -10, marginBottom: 10, alignSelf: 'flex-start' },
+  errorText: { color: 'red', fontSize: 12, marginTop: -8, marginBottom: 8, alignSelf: 'flex-start' },
   button: {
     backgroundColor: '#789C3B',
-    paddingVertical: 15,
+    paddingVertical: 12,
     borderRadius: 10,
     width: '100%',
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 25,
+    marginTop: 5,
+    marginBottom: 15,
   },
-  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   signUpText: { fontSize: 14, color: '#555', marginBottom: 10 },
   toast: {
     position: 'absolute',

@@ -1,7 +1,11 @@
 {
   "expo": {
+    "owner": "juano1984",
     "name": "mobileStart",
     "slug": "mobileStart",
+    "scheme": [
+      "mobilestart"
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -26,7 +30,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-font"
     ]
   }
 }
