@@ -142,7 +142,15 @@ import {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <ScrollView contentContainerStyle={styles.scrollContent}>
-            <View style={styles.overlay}>
+            <View style={styles.contentContainer}>
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => navigation.navigate('Home')}
+                >
+                    <FontAwesome name="arrow-left" size={20} color="#fff" />
+                </TouchableOpacity>
+
+                <View style={styles.overlay}>
                 {/* Avatar */}
                 <View style={styles.avatarContainer}>
                 {avatar ? (
@@ -235,13 +243,10 @@ import {
                 <Text style={styles.saveButtonText}>Guardar cambios</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
-                <Text style={styles.backButtonText}>Volver al Panel Principal</Text>
-                </TouchableOpacity>
-
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                 <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
                 </TouchableOpacity>
+                </View>
             </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -258,10 +263,23 @@ import {
     },
     scrollContent: {
         flexGrow: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
         paddingVertical: 40,
         paddingHorizontal: 15,
+    },
+    contentContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        maxWidth: 900,
+        alignSelf: 'center',
+    },
+    backButton: {
+        alignSelf: 'flex-start',
+        marginBottom: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        padding: 10,
+        borderRadius: 8,
     },
     overlay: {
         width: '100%',
@@ -353,15 +371,6 @@ import {
         marginBottom: 6,
     },
     saveButtonText: { color: '#2e7d32', fontWeight: 'bold', fontSize: 14 },
-    backButton: {
-        backgroundColor: '#2e7d32',
-        paddingVertical: 10,
-        borderRadius: 10,
-        width: '100%',
-        alignItems: 'center',
-        marginBottom: 6,
-    },
-    backButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
     logoutButton: {
         borderColor: '#fff',
         borderWidth: 1.5,

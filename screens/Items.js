@@ -11,6 +11,7 @@ import {
     ImageBackground,
     Platform,
     Modal,
+    ScrollView,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
@@ -28,6 +29,8 @@ export default function Items({ navigation }) {
     const [modalSuccess, setModalSuccess] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState(false);
     const [deleteData, setDeleteData] = useState({ id: '', name: '' });
+    const [detailVisible, setDetailVisible] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     const showModal = (isSuccess, message) => {
         setModalSuccess(isSuccess);
@@ -74,6 +77,11 @@ export default function Items({ navigation }) {
         }
     };
 
+    const showProductDetail = (product) => {
+        setSelectedProduct(product);
+        setDetailVisible(true);
+    };
+
     const filteredProducts = products.filter((p) => {
         const matchName = (p.name || '').toLowerCase().includes(search.toLowerCase());
         const matchType =
@@ -83,7 +91,11 @@ export default function Items({ navigation }) {
     });
 
     const renderItem = ({ item }) => (
-        <View style={styles.card}>
+        <TouchableOpacity
+            style={styles.card}
+            onPress={() => showProductDetail(item)}
+            activeOpacity={0.8}
+        >
             <Image
                 source={
                     item.imageUrl
@@ -101,18 +113,24 @@ export default function Items({ navigation }) {
             <View style={styles.actions}>
                 <TouchableOpacity
                     style={styles.iconButton}
-                    onPress={() => navigation.navigate('EditProduct', { product: item })}
+                    onPress={(e) => {
+                        e.stopPropagation();
+                        navigation.navigate('EditProduct', { product: item });
+                    }}
                 >
                     <FontAwesome name="pencil" size={20} color="#2e7d32" />
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.iconButton}
-                    onPress={() => confirmDelete(item.id, item.name)}
+                    onPress={(e) => {
+                        e.stopPropagation();
+                        confirmDelete(item.id, item.name);
+                    }}
                 >
                     <FontAwesome name="trash" size={20} color="red" />
                 </TouchableOpacity>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 
     if (loading) {
@@ -125,12 +143,18 @@ export default function Items({ navigation }) {
     }
 
     return (
-        <ImageBackground source={require('../assets/fondoPistacho.jpg')} style={styles.background}>
+        <ImageBackground
+            source={require('../assets/fondoPistacho.jpg')}
+            style={styles.background}
+            resizeMode="cover"
+        >
             <View style={styles.overlay}>
                 <View style={styles.header}>
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
                         <FontAwesome name="arrow-left" size={20} color="#fff" />
                     </TouchableOpacity>
+
+                    <Text style={styles.title}>Productos</Text>
 
                     <View style={styles.searchContainer}>
                         <FontAwesome name="search" size={18} color="#555" />
@@ -243,12 +267,94 @@ export default function Items({ navigation }) {
                     </View>
                 </View>
             </Modal>
+
+            {/* Modal de detalle del producto */}
+            <Modal visible={detailVisible} transparent animationType="slide">
+                <View style={styles.modalOverlay}>
+                    <View style={styles.detailModalContainer}>
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            <View style={styles.detailHeader}>
+                                <Text style={styles.detailTitle}>Detalle del Producto</Text>
+                                <TouchableOpacity onPress={() => setDetailVisible(false)}>
+                                    <FontAwesome name="times" size={20} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
+
+                            {selectedProduct && (
+                                <View style={styles.detailContent}>
+                                    <Image
+                                        source={
+                                            selectedProduct.imageUrl
+                                                ? { uri: String(selectedProduct.imageUrl) }
+                                                : require('../assets/default.png')
+                                        }
+                                        style={styles.detailImage}
+                                    />
+
+                                    <View style={styles.detailInfoSection}>
+                                        <View style={styles.detailRow}>
+                                            <FontAwesome name="tag" size={18} color="#2e7d32" />
+                                            <Text style={styles.detailLabel}>Nombre:</Text>
+                                        </View>
+                                        <Text style={styles.detailValue}>{selectedProduct.name}</Text>
+                                    </View>
+
+                                    <View style={styles.detailInfoSection}>
+                                        <View style={styles.detailRow}>
+                                            <FontAwesome name="list" size={18} color="#2e7d32" />
+                                            <Text style={styles.detailLabel}>Tipo:</Text>
+                                        </View>
+                                        <Text style={styles.detailValue}>{selectedProduct.tipo || 'No especificado'}</Text>
+                                    </View>
+
+                                    <View style={styles.detailInfoSection}>
+                                        <View style={styles.detailRow}>
+                                            <FontAwesome name="cubes" size={18} color="#2e7d32" />
+                                            <Text style={styles.detailLabel}>Cantidad:</Text>
+                                        </View>
+                                        <Text style={styles.detailValue}>{selectedProduct.quantity} unidades</Text>
+                                    </View>
+
+                                    <View style={styles.detailInfoSection}>
+                                        <View style={styles.detailRow}>
+                                            <FontAwesome name="dollar" size={18} color="#2e7d32" />
+                                            <Text style={styles.detailLabel}>Precio:</Text>
+                                        </View>
+                                        <Text style={styles.detailValue}>${selectedProduct.price} c/u</Text>
+                                    </View>
+
+                                    {selectedProduct.description && (
+                                        <View style={styles.detailInfoSection}>
+                                            <View style={styles.detailRow}>
+                                                <FontAwesome name="align-left" size={18} color="#2e7d32" />
+                                                <Text style={styles.detailLabel}>Descripción:</Text>
+                                            </View>
+                                            <Text style={styles.detailValue}>{selectedProduct.description}</Text>
+                                        </View>
+                                    )}
+
+                                    <TouchableOpacity
+                                        style={styles.detailCloseButton}
+                                        onPress={() => setDetailVisible(false)}
+                                    >
+                                        <Text style={styles.detailCloseButtonText}>Cerrar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
         </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
-    background: { flex: 1, resizeMode: 'cover' },
+    background: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
     overlay: {
         flex: 1,
         backgroundColor: 'rgba(29, 53, 19, 0.7)',
@@ -267,6 +373,16 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
         padding: 10,
         borderRadius: 8,
+    },
+    title: {
+        fontSize: Platform.OS === 'web' ? 32 : 28,
+        fontWeight: 'bold',
+        color: '#fff',
+        textAlign: 'center',
+        marginBottom: 20,
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 2, height: 2 },
+        textShadowRadius: 4,
     },
     searchContainer: {
         flexDirection: 'row',
@@ -428,5 +544,107 @@ const styles = StyleSheet.create({
         color: '#554444ff',
         fontWeight: 'bold',
         fontSize: 15,
+    },
+    // Modal de detalle
+    detailModalContainer: {
+        width: '90%',
+        maxWidth: 500,
+        maxHeight: '90%',
+        backgroundColor: '#e6f7ca',
+        borderRadius: 18,
+        padding: 0,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+        shadowOffset: { width: 0, height: 5 },
+        shadowRadius: 10,
+        borderWidth: 2,
+        borderColor: '#789C3B',
+    },
+    detailHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        paddingTop: 12,
+        paddingBottom: 12,
+        backgroundColor: '#789C3B',
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+    },
+    detailTitle: {
+        fontSize: Platform.OS === 'web' ? 20 : 18,
+        fontWeight: 'bold',
+        color: '#fff',
+        textShadowColor: 'rgba(0, 0, 0, 0.2)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
+    },
+    detailContent: {
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        paddingTop: 15,
+        paddingBottom: 15,
+    },
+    detailImage: {
+        width: Platform.OS === 'web' ? 140 : 120,
+        height: Platform.OS === 'web' ? 140 : 120,
+        borderRadius: 12,
+        marginBottom: 12,
+        borderWidth: 3,
+        borderColor: '#789C3B',
+        backgroundColor: '#fff',
+    },
+    detailInfoSection: {
+        width: '100%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 10,
+        marginBottom: 8,
+        borderLeftWidth: 4,
+        borderLeftColor: '#789C3B',
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    detailRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 5,
+    },
+    detailLabel: {
+        fontSize: Platform.OS === 'web' ? 13 : 12,
+        fontWeight: 'bold',
+        color: '#2e7d32',
+        marginLeft: 8,
+    },
+    detailValue: {
+        fontSize: Platform.OS === 'web' ? 14 : 13,
+        color: '#333',
+        marginLeft: 22,
+        lineHeight: 18,
+    },
+    detailCloseButton: {
+        backgroundColor: '#2e7d32',
+        paddingVertical: 10,
+        paddingHorizontal: 35,
+        borderRadius: 10,
+        marginTop: 5,
+        marginBottom: 5,
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowOffset: { width: 0, height: 3 },
+        shadowRadius: 5,
+        elevation: 5,
+        borderWidth: 2,
+        borderColor: '#fff',
+    },
+    detailCloseButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: Platform.OS === 'web' ? 14 : 13,
+        textTransform: 'uppercase',
     },
 });
