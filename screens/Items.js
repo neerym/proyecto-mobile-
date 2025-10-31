@@ -189,14 +189,15 @@ import {
             </TouchableOpacity>
             </View>
 
-            <FlatList
-                data={filteredProducts}
-                keyExtractor={(item) => item.id}
-                renderItem={renderItem}
-                numColumns={2}
-                columnWrapperStyle={{ justifyContent: 'space-between' }}
-                contentContainerStyle={{ paddingBottom: 40 }}
-                />
+        <FlatList
+        data={filteredProducts}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        numColumns={2}
+        columnWrapperStyle={{ justifyContent: 'space-between' }} // 🔹 columnas parejitas
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 10, paddingBottom: 60 }}
+        />
 
         </View>
         </ImageBackground>
@@ -277,30 +278,15 @@ import {
         fontSize: 15,
     },
     card: {
-        flex: 1,
-        backgroundColor: '#e6f7ca',
-        borderColor: '#789C3B',
-        padding: 10,
-        borderRadius: 12,
-        margin: 6,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 4,
-        aspectRatio: 1, 
-        },
-        image: { width: 70, height: 70, borderRadius: 10, marginBottom: 8 },
-        name: { fontSize: 15, fontWeight: 'bold', color: '#2e7d32', textAlign: 'center' },
-        type: { color: '#555', fontStyle: 'italic', fontSize: 12, textAlign: 'center' },
-        detail: { color: '#333', fontSize: 12, textAlign: 'center' },
-        actions: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 10,
-        marginTop: 5,
-        },
-        iconButton: {
-        alignSelf: 'center',
-        },
+    width: 170, // 📱 tamaño estable en todos los celulares
+    margin: 8,
+    borderRadius: 12,
+    backgroundColor: '#e6f7ca',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    elevation: 4,
+},
 
     iconButton: { alignSelf: 'center' },
 });
