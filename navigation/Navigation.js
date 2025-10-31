@@ -36,7 +36,7 @@ function Navigation() {
       {/* Stack principal de pantallas */}
       <Stack.Navigator
         initialRouteName={isAuthenticated ? "Home" : "Login"}
-        screenOptions={{ headerShown: false }} // 👈 esto oculta el header en todas
+        screenOptions={{ headerShown: false }} 
       >
         {/* Pantallas públicas */}
         <Stack.Screen name="Login" component={Login} />
