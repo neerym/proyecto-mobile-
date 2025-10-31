@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Image, 
-  Animated, 
-  ImageBackground 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Animated,
+  ImageBackground,
+  ScrollView
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { signOut } from 'firebase/auth';
@@ -74,58 +75,64 @@ export default function Home({ navigation }) {
       source={require('../assets/fondoPistacho.jpg')}
       style={styles.backgroundImage}
     >
-      <View style={styles.overlay}>
-        <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
-        <Text style={styles.title}>Panel Principal</Text>
-        <Text style={styles.subtitle}>Seleccioná un módulo para continuar</Text>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
+        <View style={styles.overlay}>
+          <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
+          <Text style={styles.title}>Panel Principal</Text>
+          <Text style={styles.subtitle}>Seleccioná un módulo para continuar</Text>
 
-        <Animated.View 
-          style={[
-            styles.grid,
-            { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
-          ]}
-        >
-          <TouchableOpacity 
-            style={styles.card} 
-            onPress={() => navigation.navigate('Items')}
+          <Animated.View
+            style={[
+              styles.grid,
+              { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+            ]}
           >
-            <FontAwesome name="shopping-cart" size={40} color="#789C3B" />
-            <Text style={styles.cardText}>Productos</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => navigation.navigate('Items')}
+            >
+              <FontAwesome name="shopping-cart" size={40} color="#789C3B" />
+              <Text style={styles.cardText}>Productos</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
-            <FontAwesome name="truck" size={40} color="#789C3B" />
-            <Text style={styles.cardText}>Proveedores</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+              <FontAwesome name="truck" size={40} color="#789C3B" />
+              <Text style={styles.cardText}>Proveedores</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
-            <FontAwesome name="tags" size={40} color="#789C3B" />
-            <Text style={styles.cardText}>Marcas</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+              <FontAwesome name="tags" size={40} color="#789C3B" />
+              <Text style={styles.cardText}>Marcas</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
-            <FontAwesome name="folder-open" size={40} color="#789C3B" />
-            <Text style={styles.cardText}>Categorías</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.card} onPress={handleUnavailable}>
+              <FontAwesome name="folder-open" size={40} color="#789C3B" />
+              <Text style={styles.cardText}>Categorías</Text>
+            </TouchableOpacity>
 
-          {/* Nuevo cuadrado: Ver Perfil */}
-          <TouchableOpacity 
-            style={styles.card} 
-            onPress={() => navigation.navigate('Profile')}
-          >
-            <FontAwesome name="user" size={40} color="#789C3B" />
-            <Text style={styles.cardText}>Perfil</Text>
-          </TouchableOpacity>
+            {/* Nuevo cuadrado: Ver Perfil */}
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => navigation.navigate('Profile')}
+            >
+              <FontAwesome name="user" size={40} color="#789C3B" />
+              <Text style={styles.cardText}>Perfil</Text>
+            </TouchableOpacity>
 
-          {/* Botón de logout también dentro del grid (opcional) */}
-          <TouchableOpacity 
-            style={[styles.card, { backgroundColor: '#ffe6e6' }]} 
-            onPress={handleLogout}
-          >
-            <FontAwesome name="sign-out" size={40} color="#b71c1c" />
-            <Text style={[styles.cardText, { color: '#b71c1c' }]}>Salir</Text>
-          </TouchableOpacity>
-        </Animated.View>
+            {/* Botón de logout también dentro del grid (opcional) */}
+            <TouchableOpacity
+              style={[styles.card, { backgroundColor: '#ffe6e6' }]}
+              onPress={handleLogout}
+            >
+              <FontAwesome name="sign-out" size={40} color="#b71c1c" />
+              <Text style={[styles.cardText, { color: '#b71c1c' }]}>Salir</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
 
         {toastVisible && (
           <Animated.View
@@ -145,7 +152,7 @@ export default function Home({ navigation }) {
             <Text style={styles.toastText}>{toastMessage}</Text>
           </Animated.View>
         )}
-      </View>
+      </ScrollView>
     </ImageBackground>
   );
 }
@@ -153,35 +160,42 @@ export default function Home({ navigation }) {
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
-    resizeMode: 'cover',
-    justifyContent: 'center',
-    alignItems: 'center',
     width: '100%',
+    height: '100%',
   },
-  overlay: {
+  scrollView: {
     flex: 1,
     width: '100%',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    minHeight: '100%',
+  },
+  overlay: {
+    width: '100%',
+    minHeight: '100%',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: 40,
+    paddingBottom: 40,
     backgroundColor: 'rgba(255, 255, 255, 0.8)', // leve velo blanco
   },
   logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 15,
+    width: 80,
+    height: 80,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#2e7d32',
     marginBottom: 5,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#444',
-    marginBottom: 25,
+    marginBottom: 20,
     textAlign: 'center',
   },
   grid: {
@@ -190,11 +204,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 15,
     width: '90%',
+    maxWidth: 600,
+    paddingBottom: 20,
   },
   card: {
     backgroundColor: '#fff',
-    width: '42%',
-    aspectRatio: 1,
+    width: 160,
+    height: 160,
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',

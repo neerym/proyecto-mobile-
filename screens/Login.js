@@ -12,10 +12,11 @@ import {
   signInWithCredential,
 } from "firebase/auth";
 
-import * as WebBrowser from "expo-web-browser";          
-import * as AuthSession from "expo-auth-session";         
+import * as WebBrowser from "expo-web-browser";
+import * as AuthSession from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
 import { auth } from "../src/config/firebaseConfig";
+import GoogleIcon from "../components/GoogleIcon";
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
@@ -139,24 +140,24 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
 
             <ImageBackground
             source={require('../assets/fondoPistacho.jpg')}
-            style={{ width: '100%'}}
+            style={styles.backgroundImage}
           >
-            <ScrollView 
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} // 👈 agregado
+            <ScrollView
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
 
         <View style={styles.container}>
-          
+
           {/* Encabezado con logo */}
-          
+
           <View style={styles.header}>
             <Text style={styles.headerText}>Sana-mente Natural</Text>
             <Image source={require('../assets/logoblanco.png')} style={styles.logo} />
           </View>
 
-
+          <View style={styles.formWrapper}>
           {/* Formulario principal */}
           <View style={styles.form}>
             <Text style={styles.title}>Iniciar sesión</Text>
@@ -228,12 +229,10 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
             <TouchableOpacity
               style={styles.googleButton}
               disabled={!request}
-              onPress={() => {
-                promptAsync({ useProxy: true });
-              }}
+              onPress={() => promptAsync()}
               activeOpacity={0.8}
             >
-              <FontAwesome name="google" size={20} color="#DB4437" />
+              <GoogleIcon size={20} />
               <Text style={styles.googleText}>Ingresar con Google</Text>
             </TouchableOpacity>
 
@@ -246,8 +245,9 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
             </TouchableOpacity>
 
             {/* Frase de la app y pie */}
-            <Text style={styles.footer}>© 2025 Sana-mente Natural</Text> 
+            <Text style={styles.footer}>© 2025 Sana-mente Natural</Text>
             <Text style={styles.footer}> Porque comer bien es la base de sentirse mejor</Text>
+          </View>
           </View>
         </View>
       </ScrollView>
@@ -268,20 +268,26 @@ showError("Si tu cuenta existe, recibirás un enlace para restablecer tu contras
 
 // Estilos
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: Platform.OS === 'web' ? 'center' : 'center',
+  },
+  container: {
+    minHeight: '100%',
+    backgroundColor: "rgba(29, 53, 19, 0.55)",
+    paddingTop: Platform.OS === 'web' ? 0 : 40,
+    paddingBottom: Platform.OS === 'web' ? 0 : 40,
+  },
   header: {
     width: '100%',
     alignItems: 'center',
-    paddingVertical: 50,
-    backgroundColor:"rgba(29, 53, 19, 0.55)" //COLOR OPACIDAD
+    paddingVertical: 30,
   },
   backgroundImage: {
-  flex: 1,
-  resizeMode: 'cover',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '100%'
-},
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   headerText: {
   fontSize: 22,
   color: '#fff',
@@ -293,24 +299,29 @@ const styles = StyleSheet.create({
   textShadowRadius: 2,
   letterSpacing: 1, 
 },
-  logo: { width: 180, height: 180 },
+  logo: { width: 140, height: 140 },
+  formWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingBottom: 20,
+  },
   form: {
     width: '100%',
-    flex: 1,
+    maxWidth: 600,
     alignItems: 'center',
-    marginTop: -75,
+    marginTop: -40,
     backgroundColor: '#fff',
     borderRadius: 20,
-    padding: 20,
-    paddingTop: 20, 
+    padding: 25,
+    paddingTop: 25,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 5,
-    alignSelf: 'stretch'
   },
-  title: { fontSize: 35, fontWeight: 'bold', color: 'rgba(16, 57, 0, 1)', marginBottom: 30  },
+  title: { fontSize: 28, fontWeight: 'bold', color: 'rgba(16, 57, 0, 1)', marginBottom: 20  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -319,8 +330,9 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     paddingHorizontal: 10,
-    marginBottom: 25,
-    height: 50,
+    marginBottom: 15,
+    height: 48,
+    width: '100%',
   },
   icon: { marginRight: 10 },
   input: { flex: 1, height: 40 },
@@ -328,18 +340,18 @@ const styles = StyleSheet.create({
     color: '#789C3B',
     fontSize: 13,
     textAlign: "right",
-    marginBottom: 30,
-    marginTop: -15
+    marginBottom: 20,
+    marginTop: -8
   },
   button: {
     backgroundColor: '#789C3B',
-    paddingVertical: 15,
+    paddingVertical: 12,
     borderRadius: 10,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
   },
-  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -349,10 +361,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     justifyContent: 'center',
     width: '100%',
-    marginBottom: 25,
+    marginBottom: 18,
   },
-  googleText: { marginLeft: 10, fontSize: 16, color: '#333' },
-  signUpText: { fontSize: 14, color: '#555', marginBottom: 20 },
+  googleText: { marginLeft: 10, fontSize: 15, color: '#333' },
+  signUpText: { fontSize: 14, color: '#555', marginBottom: 15 },
   footer: { fontSize: 12, color: '#aaa', textAlign: 'center', marginTop: 10 },
   toast: {
     

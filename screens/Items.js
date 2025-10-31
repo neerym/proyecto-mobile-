@@ -193,6 +193,7 @@ import {
             data={filteredProducts}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
+            style={{ width: '100%', maxWidth: 800 }}
             contentContainerStyle={{ paddingBottom: 40 }}
             ListEmptyComponent={
                 <Text style={{ color: '#fff', textAlign: 'center', marginTop: 20 }}>
@@ -206,14 +207,23 @@ import {
     }
 
     const styles = StyleSheet.create({
-    background: { flex: 1, resizeMode: 'cover' },
+    background: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
     overlay: {
         flex: 1,
         backgroundColor: 'rgba(29, 53, 19, 0.6)',
         paddingTop: 60,
         paddingHorizontal: 15,
+        alignItems: 'center',
     },
-    header: { marginBottom: 20 },
+    header: {
+        marginBottom: 20,
+        width: '100%',
+        maxWidth: 800,
+    },
     backButton: { alignSelf: 'flex-start', marginBottom: 10 },
     searchContainer: {
         flexDirection: 'row',

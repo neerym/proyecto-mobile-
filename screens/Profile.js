@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
-    StyleSheet, 
-    Image, 
-    Alert, 
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    Image,
+    Alert,
     ActivityIndicator,
-    ImageBackground
+    ImageBackground,
+    ScrollView,
+    KeyboardAvoidingView,
+    Platform
     } from 'react-native';
     import { FontAwesome } from '@expo/vector-icons';
     import { auth } from '../src/config/firebaseConfig';
@@ -132,7 +135,12 @@ import {
         source={require('../assets/fondoPistacho.jpg')}
         style={styles.backgroundImage}
         >
-        <View style={styles.overlay}>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+            <View style={styles.overlay}>
             {/* Avatar */}
             <View style={styles.avatarContainer}>
             {avatar ? (
@@ -219,6 +227,8 @@ import {
             <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
             </TouchableOpacity>
         </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
         </ImageBackground>
     );
     }
@@ -227,36 +237,43 @@ import {
     const styles = StyleSheet.create({
     backgroundImage: {
         flex: 1,
-        resizeMode: 'cover',
-        justifyContent: 'center',
-        alignItems: 'center',
         width: '100%',
+        height: '100%',
+    },
+    scrollContent: {
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+        paddingHorizontal: 15,
     },
     overlay: {
-        flex: 1,
         width: '100%',
+        maxWidth: 600,
         alignItems: 'center',
-        padding: 25,
-        backgroundColor: 'rgba(29, 53, 19, 0.65)',
+        padding: 20,
+        backgroundColor: 'rgba(29, 53, 19, 0.7)',
+        borderRadius: 15,
+        marginBottom: 20,
     },
     avatarContainer: {
-        marginTop: 40,
-        marginBottom: 15,
+        marginTop: 10,
+        marginBottom: 8,
         alignItems: 'center',
         justifyContent: 'center',
     },
     avatar: {
-        width: 110,
-        height: 110,
-        borderRadius: 55,
+        width: 90,
+        height: 90,
+        borderRadius: 45,
         borderWidth: 2,
         borderColor: '#fff',
     },
     photoButtons: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: 10,
-        gap: 15,
+        marginTop: 6,
+        gap: 12,
     },
     iconButton: {
         flexDirection: 'row',
@@ -271,71 +288,74 @@ import {
         alignSelf: 'flex-start',
         color: '#fff',
         fontWeight: '600',
-        marginBottom: 6,
+        marginBottom: 3,
+        marginTop: 3,
         marginLeft: 5,
-        fontSize: 15,
+        fontSize: 12,
     },
     input: {
         backgroundColor: 'rgba(255,255,255,0.15)',
         borderRadius: 10,
-        padding: 12,
-        marginBottom: 15,
+        padding: 9,
+        marginBottom: 6,
         width: '100%',
         color: '#fff',
-        fontSize: 15,
+        fontSize: 14,
     },
     disabledInput: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#e6e6e6',
         borderRadius: 10,
-        padding: 12,
-        marginBottom: 15,
+        padding: 9,
+        marginBottom: 6,
         width: '100%',
     },
-    disabledText: { color: '#666', fontSize: 15 },
+    disabledText: { color: '#666', fontSize: 14 },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(255,255,255,0.15)',
         borderRadius: 10,
         paddingHorizontal: 12,
-        marginBottom: 15,
+        marginBottom: 6,
         width: '100%',
-        height: 50,
+        height: 42,
     },
     inputPassword: {
         flex: 1,
         color: '#fff',
-        fontSize: 15,
+        fontSize: 14,
     },
     saveButton: {
         backgroundColor: '#fff',
-        paddingVertical: 15,
+        paddingVertical: 10,
         borderRadius: 10,
         width: '100%',
         alignItems: 'center',
-        marginBottom: 10,
+        marginTop: 10,
+        marginBottom: 6,
     },
-    saveButtonText: { color: '#2e7d32', fontWeight: 'bold', fontSize: 16 },
+    saveButtonText: { color: '#2e7d32', fontWeight: 'bold', fontSize: 14 },
     backButton: {
         backgroundColor: '#2e7d32',
-        paddingVertical: 15,
+        paddingVertical: 10,
         borderRadius: 10,
         width: '100%',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 6,
     },
-    backButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    backButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
     logoutButton: {
         borderColor: '#fff',
         borderWidth: 1.5,
-        paddingVertical: 15,
+        paddingVertical: 10,
         borderRadius: 10,
         width: '100%',
         alignItems: 'center',
+        marginBottom: 10,
     },
-    logoutButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    logoutButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
     loadingContainer: { 
         flex: 1, 
         justifyContent: 'center', 

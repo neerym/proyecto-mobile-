@@ -81,7 +81,7 @@ import {
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
             <View style={styles.overlay}>
                 <Text style={styles.title}>Agregar Producto</Text>
 
@@ -151,9 +151,9 @@ import {
                     style={styles.picker}
                     dropdownIconColor="#fff"
                 >
-                    <Picker.Item label="Alimento" value="alimento" />
-                    <Picker.Item label="Bebida" value="bebida" />
-                    <Picker.Item label="Otros" value="otros" />
+                    <Picker.Item label="Alimento" value="alimento" color="#333" />
+                    <Picker.Item label="Bebida" value="bebida" color="#333" />
+                    <Picker.Item label="Otros" value="otros" color="#333" />
                 </Picker>
                 </View>
 
@@ -173,31 +173,52 @@ import {
     }
 
     const styles = StyleSheet.create({
-    background: { flex: 1, resizeMode: 'cover', width: '100%' },
-    overlay: {
+    background: {
         flex: 1,
-        backgroundColor: 'rgba(29, 53, 19, 0.65)',
-        padding: 25,
+        width: '100%',
+        height: '100%',
+    },
+    scrollContent: {
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+        paddingHorizontal: 15,
+    },
+    overlay: {
+        width: '100%',
+        maxWidth: 600,
+        backgroundColor: 'rgba(29, 53, 19, 0.7)',
+        padding: 20,
+        borderRadius: 15,
+        marginBottom: 30,
     },
     title: {
-        fontSize: 30,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#fff',
         textAlign: 'center',
-        marginBottom: 20,
+        marginBottom: 10,
     },
-    label: { color: '#fff', marginBottom: 5, fontWeight: '600' },
+    label: {
+        color: '#fff',
+        marginBottom: 3,
+        marginTop: 4,
+        fontWeight: '600',
+        fontSize: 13,
+    },
     input: {
         backgroundColor: 'rgba(255,255,255,0.15)',
         borderRadius: 10,
-        padding: 12,
-        marginBottom: 15,
+        padding: 9,
+        marginBottom: 5,
         color: '#fff',
+        fontSize: 14,
     },
-    imageContainer: { alignItems: 'center', marginBottom: 15 },
+    imageContainer: { alignItems: 'center', marginBottom: 8 },
     imagePreview: {
-        width: 120,
-        height: 120,
+        width: 90,
+        height: 90,
         borderRadius: 10,
         borderWidth: 2,
         borderColor: '#fff',
@@ -205,8 +226,8 @@ import {
     photoButtons: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: 10,
-        gap: 15,
+        marginTop: 6,
+        gap: 12,
     },
     iconButton: {
         flexDirection: 'row',
@@ -220,23 +241,32 @@ import {
     pickerContainer: {
         backgroundColor: 'rgba(255,255,255,0.15)',
         borderRadius: 10,
-        marginBottom: 15,
+        marginBottom: 8,
+        justifyContent: 'center',
+        overflow: 'hidden',
     },
-    picker: { color: '#fff', height: 45 },
+    picker: {
+        color: '#fff',
+        height: 50,
+        fontSize: 16,
+        backgroundColor: 'transparent',
+    },
     saveButton: {
         backgroundColor: '#fff',
-        paddingVertical: 15,
+        paddingVertical: 10,
         borderRadius: 10,
         alignItems: 'center',
-        marginBottom: 10,
+        marginTop: 10,
     },
-    saveButtonText: { color: '#2e7d32', fontWeight: 'bold', fontSize: 16 },
+    saveButtonText: { color: '#2e7d32', fontWeight: 'bold', fontSize: 14 },
     cancelButton: {
         borderColor: '#fff',
         borderWidth: 1.5,
-        paddingVertical: 15,
+        paddingVertical: 10,
         borderRadius: 10,
         alignItems: 'center',
+        marginTop: 8,
+        marginBottom: 10,
     },
-    cancelButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    cancelButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
 });
